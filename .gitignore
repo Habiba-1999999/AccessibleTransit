@@ -1,0 +1,19 @@
+.env
+.env.*
+!.env.example
+node_modules/
+android/.gradle/
+android/build/
+android/app/build/
+.idea/
+*.log
+.DS_Store
+
+backend/uploads/
+
+# Local backup files
+*.backup
+*.broken-backup
+
+backend/reports.json
+android/

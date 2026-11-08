@@ -1,0 +1,1661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Accessible Transit - Report a Barrier</title>
+
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    >
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f7fb;
+            color: #222;
+        }
+
+        header {
+            padding: 16px;
+            background: #075985;
+            color: white;
+            text-align: center;
+        }
+
+        main {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 16px;
+        }
+
+        #map {
+            height: 360px;
+            width: 100%;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            padding: 18px;
+            margin-bottom: 16px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px #00000012;
+        }
+
+        label {
+            display: block;
+            margin: 12px 0 6px;
+            font-weight: bold;
+        }
+
+        input, select, textarea, button {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        button {
+            border: none;
+            background: #075985;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:disabled {
+            background: #777;
+            cursor: not-allowed;
+        }
+
+        #stopNavigationButton {
+            background: #b91c1c;
+        }
+
+        #navigationStatus,
+        #statusMessage {
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+            line-height: 1.5;
+        }
+
+        .notice {
+            background: #fff7ed;
+            border-left: 4px solid #ea580c;
+            padding: 10px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        video, #photoPreview {
+            width: 100%;
+            max-height: 360px;
+            object-fit: contain;
+            background: #111;
+            border-radius: 8px;
+            margin: 8px 0;
+        }
+
+        #cameraArea {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h2>Accessible Transit</h2>
+    <p>Report accessibility barriers for safer mobility</p>
+</header>
+
+<main>
+
+    <!-- LOCATION AND MAP -->
+    <section class="card">
+
+        <h3>Your Location</h3>
+
+        <p>
+            Select your location on the map or use your current location.
+        </p>
+
+        <button type="button" id="locateButton">
+            Use My Current Location
+        </button>
+
+        <div id="map"></div>
+
+        <label for="latitude">Latitude</label>
+        <input id="latitude" readonly>
+
+        <label for="longitude">Longitude</label>
+        <input id="longitude" readonly>
+
+    </section>
+
+
+    <!-- ROUTE NAVIGATION -->
+    <section class="card">
+
+        <h3>Accessible Route Navigation</h3>
+
+        <label for="destinationInput">
+            Enter Destination
+        </label>
+
+        <input
+            type="text"
+            id="destinationInput"
+            placeholder="Enter destination or address"
+        >
+
+        <button type="button" id="searchDestinationButton">
+            Search Destination
+        </button>
+
+        <button type="button" id="startNavigationButton">
+            Start Navigation
+        </button>
+
+        <button type="button" id="stopNavigationButton">
+            Stop Navigation
+        </button>
+
+        <p id="navigationStatus" role="status">
+            Enter a destination to begin.
+        </p>
+
+        <p class="notice">
+            Important: Routes currently use standard driving directions.
+            Wheelchair accessibility is not guaranteed. Always check the
+            route and surroundings before travelling.
+        </p>
+
+    </section>
+
+
+    <!-- BARRIER REPORTING -->
+    <section class="card">
+
+        <h3>Report a Barrier</h3>
+
+        <form id="reportForm">
+
+            <label for="type">Barrier Type</label>
+
+            <select id="type" required>
+                <option value="">Select barrier type</option>
+                <option value="Broken Ramp">Broken Ramp</option>
+                <option value="Blocked Sidewalk">Blocked Sidewalk</option>
+                <option value="Broken Elevator">Broken Elevator</option>
+                <option value="Uneven Road">Uneven Road</option>
+                <option value="Other">Other</option>
+            </select>
+
+
+            <label for="severity">Severity</label>
+
+            <select id="severity" required>
+                <option value="High">High - Completely blocked</option>
+                <option value="Medium">Medium - Difficult to pass</option>
+                <option value="Low">Low - Minor obstacle</option>
+            </select>
+
+
+            <label for="description">Description</label>
+
+            <textarea
+                id="description"
+                rows="3"
+                placeholder="Describe the accessibility barrier"
+                required
+            ></textarea>
+
+
+            <h3>Take a Live Camera Photo</h3>
+
+            <p>Camera access is requested when you open the camera.</p>
+
+            <button type="button" id="openCameraButton">
+                Open Camera
+            </button>
+
+            <div id="cameraArea">
+
+                <video
+                    id="cameraVideo"
+                    autoplay
+                    playsinline
+                ></video>
+
+                <button type="button" id="captureButton">
+                    Take Photo
+                </button>
+
+                <button type="button" id="closeCameraButton">
+                    Close Camera
+                </button>
+
+            </div>
+
+            <canvas id="photoCanvas" hidden></canvas>
+
+            <img
+                id="photoPreview"
+                alt="Captured barrier photo preview"
+                hidden
+            >
+
+            <p id="photoStatus">No photo captured.</p>
+
+            <button type="submit" id="submitButton">
+                Submit Barrier Report
+            </button>
+
+        </form>
+
+        <p id="statusMessage" role="status"></p>
+
+    </section>
+
+</main>
+
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="js/geolocation.bundle.js"></script>
+
+
+<script>
+(() => {
+
+    // =====================================================
+    // CONFIGURATION
+    // =====================================================
+
+    const API_BASE =
+        "https://para-payment-joke-main.trycloudflare.com";
+
+    const DEFAULT_LOCATION = [16.5062, 80.6480];
+
+    const GEOCODING_URL =
+        "https://nominatim.openstreetmap.org/search";
+
+    const ROUTING_URL =
+        "https://router.project-osrm.org/route/v1/driving/";
+
+
+    // =====================================================
+    // MAP INITIALIZATION
+    // =====================================================
+
+    const map = L.map("map").setView(DEFAULT_LOCATION, 13);
+
+    L.tileLayer(
+        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        {
+            attribution: "&copy; OpenStreetMap contributors"
+        }
+    ).addTo(map);
+
+
+    // =====================================================
+    // REPORTING VARIABLES
+    // =====================================================
+
+    let marker = null;
+    let cameraStream = null;
+    let capturedPhoto = null;
+    let previewObjectUrl = null;
+
+
+    // =====================================================
+    // HTML ELEMENTS
+    // =====================================================
+
+    const latitudeInput =
+        document.getElementById("latitude");
+
+    const longitudeInput =
+        document.getElementById("longitude");
+
+    const video =
+        document.getElementById("cameraVideo");
+
+    const cameraArea =
+        document.getElementById("cameraArea");
+
+    const photoPreview =
+        document.getElementById("photoPreview");
+
+    const photoStatus =
+        document.getElementById("photoStatus");
+
+    const statusMessage =
+        document.getElementById("statusMessage");
+
+    const openCameraButton =
+        document.getElementById("openCameraButton");
+
+    const captureButton =
+        document.getElementById("captureButton");
+
+    const submitButton =
+        document.getElementById("submitButton");
+
+
+    // =====================================================
+    // REPORT LOCATION SELECTION
+    // =====================================================
+
+    function setLocation(lat, lng) {
+
+        latitudeInput.value = lat.toFixed(6);
+        longitudeInput.value = lng.toFixed(6);
+
+        if (marker) {
+
+            marker.setLatLng([lat, lng]);
+
+        } else {
+
+            marker = L.marker([lat, lng], {
+                draggable: true
+            }).addTo(map);
+
+        }
+
+        marker.bindPopup(
+            "Selected barrier location"
+        ).openPopup();
+
+        marker.off("dragend");
+
+        marker.on("dragend", event => {
+
+            const position = event.target.getLatLng();
+
+            latitudeInput.value =
+                position.lat.toFixed(6);
+
+            longitudeInput.value =
+                position.lng.toFixed(6);
+
+        });
+
+        map.setView([lat, lng], 16);
+    }
+
+
+    map.on("click", event => {
+
+        setLocation(
+            event.latlng.lat,
+            event.latlng.lng
+        );
+
+    });
+
+
+    document
+        .getElementById("locateButton")
+        .addEventListener("click", () => {
+
+            if (!navigator.geolocation) {
+
+                statusMessage.textContent =
+                    "Location is not supported by this browser.";
+
+                return;
+            }
+
+            statusMessage.textContent =
+                "Getting your current location...";
+
+            navigator.geolocation.getCurrentPosition(
+
+                position => {
+
+                    setLocation(
+                        position.coords.latitude,
+                        position.coords.longitude
+                    );
+
+                    statusMessage.textContent =
+                        "Location selected successfully.";
+
+                },
+
+                error => {
+
+                    statusMessage.textContent =
+                        "Unable to get location. Allow location access " +
+                        "and try again. " + error.message;
+
+                },
+
+                {
+                    enableHighAccuracy: true,
+                    timeout: 15000,
+                    maximumAge: 0
+                }
+
+            );
+
+        });
+
+
+    // =====================================================
+    // NAVIGATION VARIABLES
+    // =====================================================
+
+    let navigationDestination = null;
+
+    let navigationCurrentLocation = null;
+
+    let navigationCurrentMarker = null;
+
+    let navigationDestinationMarker = null;
+
+    let navigationRouteLine = null;
+
+    let navigationWatcher = null;
+
+    let lastRouteOrigin = null;
+
+    let routeRequestInProgress = false;
+
+    let navigationActive = false;
+
+
+    const navigationStatus =
+        document.getElementById("navigationStatus");
+
+    const destinationInput =
+        document.getElementById("destinationInput");
+
+    const searchDestinationButton =
+        document.getElementById("searchDestinationButton");
+
+    const startNavigationButton =
+        document.getElementById("startNavigationButton");
+
+    const stopNavigationButton =
+        document.getElementById("stopNavigationButton");
+
+
+    // =====================================================
+    // DISTANCE CALCULATION
+    // =====================================================
+
+    function calculateDistance(lat1, lon1, lat2, lon2) {
+
+        const earthRadius = 6371000;
+
+        const toRadians = value =>
+            value * Math.PI / 180;
+
+        const dLat =
+            toRadians(lat2 - lat1);
+
+        const dLon =
+            toRadians(lon2 - lon1);
+
+        const a =
+            Math.sin(dLat / 2) ** 2 +
+            Math.cos(toRadians(lat1)) *
+            Math.cos(toRadians(lat2)) *
+            Math.sin(dLon / 2) ** 2;
+
+        return earthRadius *
+            2 *
+            Math.atan2(
+                Math.sqrt(a),
+                Math.sqrt(1 - a)
+            );
+    }
+
+
+    // =====================================================
+    // SEARCH DESTINATION
+    // =====================================================
+
+    async function findDestination() {
+
+        const destination =
+            destinationInput.value.trim();
+
+        if (!destination) {
+
+            navigationStatus.textContent =
+                "Please enter a destination.";
+
+            return;
+        }
+
+        searchDestinationButton.disabled = true;
+
+        navigationStatus.textContent =
+            "Searching for destination...";
+
+        try {
+
+            const url =
+                GEOCODING_URL +
+                "?format=json&limit=1&q=" +
+                encodeURIComponent(destination);
+
+            const response = await fetch(url);
+
+            if (!response.ok) {
+
+                throw new Error(
+                    "Destination search service is unavailable."
+                );
+
+            }
+
+            const results = await response.json();
+
+            if (!results.length) {
+
+                throw new Error(
+                    "Destination not found. Try another address."
+                );
+
+            }
+
+            const result = results[0];
+
+            const lat = Number(result.lat);
+
+            const lng = Number(result.lon);
+
+            if (!Number.isFinite(lat) ||
+                !Number.isFinite(lng)) {
+
+                throw new Error(
+                    "Invalid destination coordinates."
+                );
+
+            }
+
+            navigationDestination = {
+                lat: lat,
+                lng: lng
+            };
+
+            if (navigationDestinationMarker) {
+
+                map.removeLayer(
+                    navigationDestinationMarker
+                );
+
+            }
+
+            navigationDestinationMarker =
+                L.marker([lat, lng])
+                    .addTo(map)
+                    .bindPopup("Destination: " + result.display_name)
+                    .openPopup();
+
+            map.setView([lat, lng], 15);
+
+            navigationStatus.textContent =
+                "Destination found: " +
+                result.display_name +
+                "\nNow press Start Navigation.";
+
+            clearNavigationRoute();
+
+        } catch (error) {
+
+            navigationStatus.textContent =
+                "Destination search failed: " +
+                error.message;
+
+        } finally {
+
+            searchDestinationButton.disabled = false;
+
+        }
+
+    }
+
+
+    searchDestinationButton.addEventListener(
+        "click",
+        findDestination
+    );
+
+
+    destinationInput.addEventListener(
+        "keydown",
+        event => {
+
+            if (event.key === "Enter") {
+
+                event.preventDefault();
+
+                findDestination();
+
+            }
+
+        }
+    );
+
+
+    // =====================================================
+    // CLEAR OLD ROUTE
+    // =====================================================
+
+    function clearNavigationRoute() {
+
+        if (navigationRouteLine) {
+
+            map.removeLayer(navigationRouteLine);
+
+            navigationRouteLine = null;
+
+        }
+
+        lastRouteOrigin = null;
+
+    }
+
+
+    // =====================================================
+    // CALCULATE AND DISPLAY ROUTE
+    // =====================================================
+
+    async function calculateRoute(startLat, startLng) {
+
+        if (!navigationDestination) {
+            navigationStatus.textContent =
+                "Search for a destination first.";
+            return;
+        }
+
+        if (routeRequestInProgress) return;
+
+        routeRequestInProgress = true;
+
+        navigationStatus.textContent =
+            "Finding pedestrian routes and checking reported barriers...";
+
+        try {
+
+            const destination = navigationDestination;
+
+            // Request pedestrian routes from Valhalla.
+            const request = {
+                locations: [
+                    {
+                        lat: startLat,
+                        lon: startLng,
+                        type: "break"
+                    },
+                    {
+                        lat: destination.lat,
+                        lon: destination.lng,
+                        type: "break"
+                    }
+                ],
+                costing: "pedestrian",
+                units: "kilometers",
+                shape_format: "polyline6",
+                alternates: 2
+            };
+
+            const routingUrl =
+                "https://valhalla1.openstreetmap.de/route?json=" +
+                encodeURIComponent(JSON.stringify(request));
+
+            const routeResponse = await fetch(routingUrl);
+
+            if (!routeResponse.ok) {
+                throw new Error(
+                    "Pedestrian routing service returned HTTP " +
+                    routeResponse.status
+                );
+            }
+
+            const routeData = await routeResponse.json();
+
+            if (routeData.error || !routeData.trip) {
+                throw new Error(
+                    routeData.error || "No pedestrian route was found."
+                );
+            }
+
+            // Decode Valhalla polyline6.
+            function decodePolyline(encoded) {
+
+                let index = 0;
+                let lat = 0;
+                let lng = 0;
+                const points = [];
+
+                while (index < encoded.length) {
+
+                    let result = 0;
+                    let shift = 0;
+                    let byte;
+
+                    do {
+                        byte = encoded.charCodeAt(index++) - 63;
+                        result |= (byte & 0x1f) << shift;
+                        shift += 5;
+                    } while (byte >= 0x20);
+
+                    const deltaLat =
+                        (result & 1) ? ~(result >> 1) : (result >> 1);
+
+                    lat += deltaLat;
+
+                    result = 0;
+                    shift = 0;
+
+                    do {
+                        byte = encoded.charCodeAt(index++) - 63;
+                        result |= (byte & 0x1f) << shift;
+                        shift += 5;
+                    } while (byte >= 0x20);
+
+                    const deltaLng =
+                        (result & 1) ? ~(result >> 1) : (result >> 1);
+
+                    lng += deltaLng;
+
+                    points.push({
+                        lat: lat / 1000000,
+                        lng: lng / 1000000
+                    });
+                }
+
+                return points;
+            }
+
+            // Collect the main route and alternative routes.
+            const trips = [
+                routeData.trip,
+                ...(routeData.alternates || []).map(item =>
+                    item.trip || item
+                )
+            ];
+
+            const routes = trips.map((trip, index) => {
+
+                const points = [];
+
+                (trip.legs || []).forEach(leg => {
+
+                    if (leg.shape) {
+                        points.push(
+                            ...decodePolyline(leg.shape)
+                        );
+                    }
+
+                });
+
+                return {
+                    trip: trip,
+                    points: points,
+                    distance: Number(trip.summary?.length || 0),
+                    duration: Number(trip.summary?.time || 0),
+                    barrierCount: 0,
+                    barriers: [],
+                    routeNumber: index + 1
+                };
+
+            }).filter(route => route.points.length >= 2);
+
+            if (!routes.length) {
+                throw new Error(
+                    "The routing service returned no usable route geometry."
+                );
+            }
+
+            // Fetch active barrier reports.
+            let barriers = [];
+            let barrierCheckAvailable = true;
+
+            try {
+
+                const barrierResponse = await fetch(
+                    API_BASE + "/api/reports"
+                );
+
+                if (!barrierResponse.ok) {
+                    throw new Error("Barrier API unavailable.");
+                }
+
+                const barrierData = await barrierResponse.json();
+
+                if (!barrierData.success ||
+                    !Array.isArray(barrierData.reports)) {
+                    throw new Error("Invalid barrier API response.");
+                }
+
+                barriers = barrierData.reports.filter(report => {
+
+                    const lat = Number(report.latitude);
+                    const lng = Number(report.longitude);
+
+                    return Number.isFinite(lat) &&
+                        Number.isFinite(lng) &&
+                        lat >= -90 && lat <= 90 &&
+                        lng >= -180 && lng <= 180 &&
+                        report.status !== "Resolved";
+
+                });
+
+            } catch (barrierError) {
+
+                barrierCheckAvailable = false;
+
+                console.warn(
+                    "Barrier checking unavailable:",
+                    barrierError
+                );
+
+            }
+
+            // Calculate distance from a barrier to a route segment.
+            function distanceToSegment(point, start, end) {
+
+                const earthRadius = 6371000;
+                const referenceLat =
+                    point.lat * Math.PI / 180;
+
+                const scaleX =
+                    earthRadius * Math.cos(referenceLat) *
+                    Math.PI / 180;
+
+                const scaleY =
+                    earthRadius * Math.PI / 180;
+
+                const px = point.lng * scaleX;
+                const py = point.lat * scaleY;
+
+                const ax = start.lng * scaleX;
+                const ay = start.lat * scaleY;
+
+                const bx = end.lng * scaleX;
+                const by = end.lat * scaleY;
+
+                const dx = bx - ax;
+                const dy = by - ay;
+
+                const lengthSquared = dx * dx + dy * dy;
+
+                let t = 0;
+
+                if (lengthSquared > 0) {
+                    t = (
+                        (px - ax) * dx +
+                        (py - ay) * dy
+                    ) / lengthSquared;
+                }
+
+                t = Math.max(0, Math.min(1, t));
+
+                const nearestX = ax + t * dx;
+                const nearestY = ay + t * dy;
+
+                return Math.sqrt(
+                    Math.pow(px - nearestX, 2) +
+                    Math.pow(py - nearestY, 2)
+                );
+            }
+
+            // Count reported barriers within 25 metres of each route.
+            routes.forEach(route => {
+
+                if (!barrierCheckAvailable) return;
+
+                barriers.forEach(barrier => {
+
+                    const barrierPoint = {
+                        lat: Number(barrier.latitude),
+                        lng: Number(barrier.longitude)
+                    };
+
+                    let minimumDistance = Infinity;
+
+                    for (
+                        let i = 0;
+                        i < route.points.length - 1;
+                        i++
+                    ) {
+
+                        const distance = distanceToSegment(
+                            barrierPoint,
+                            route.points[i],
+                            route.points[i + 1]
+                        );
+
+                        minimumDistance = Math.min(
+                            minimumDistance,
+                            distance
+                        );
+
+                    }
+
+                    if (minimumDistance <= 25) {
+                        route.barriers.push(barrier);
+                    }
+
+                });
+
+                route.barrierCount = route.barriers.length;
+
+            });
+
+            // Prefer fewer reported barriers, then shorter distance.
+            routes.sort((a, b) => {
+
+                if (barrierCheckAvailable &&
+                    a.barrierCount !== b.barrierCount) {
+                    return a.barrierCount - b.barrierCount;
+                }
+
+                return a.distance - b.distance;
+
+            });
+
+            const bestRoute = routes[0];
+
+            // Draw the recommended pedestrian route.
+            clearNavigationRoute();
+
+            const coordinates = bestRoute.points.map(point => [
+                point.lat,
+                point.lng
+            ]);
+
+            navigationRouteLine = L.polyline(
+                coordinates,
+                {
+                    color: "#087443",
+                    weight: 6,
+                    opacity: 0.9
+                }
+            ).addTo(map);
+
+            lastRouteOrigin = {
+                lat: startLat,
+                lng: startLng
+            };
+
+            map.fitBounds(
+                navigationRouteLine.getBounds(),
+                { padding: [35, 35] }
+            );
+
+            const distanceText =
+                bestRoute.distance > 0
+                    ? bestRoute.distance.toFixed(2) + " km"
+                    : "Distance unavailable";
+
+            const durationText =
+                bestRoute.duration > 0
+                    ? Math.round(bestRoute.duration / 60) + " minutes"
+                    : "Time unavailable";
+
+            let status =
+                "Recommended pedestrian route found.\n" +
+                "Distance: " + distanceText + "\n" +
+                "Estimated walking time: " + durationText + "\n";
+
+            if (barrierCheckAvailable) {
+
+                status +=
+                    "Reported barriers nearby: " +
+                    bestRoute.barrierCount + "\n" +
+                    "Routes compared: " + routes.length;
+
+            } else {
+
+                status +=
+                    "Barrier checking is temporarily unavailable. " +
+                    "Route selected by distance.";
+
+            }
+
+            status +=
+                "\n\nThis route is based on pedestrian directions " +
+                "and reported barriers. Wheelchair accessibility " +
+                "is not guaranteed.";
+
+            navigationStatus.textContent = status;
+
+        } catch (error) {
+
+            console.error("Pedestrian routing error:", error);
+
+            navigationStatus.textContent =
+                "Route calculation failed: " + error.message;
+
+        } finally {
+
+            routeRequestInProgress = false;
+
+        }
+
+    }
+
+    function updateNavigationLocation(position) {
+
+        const lat =
+            position.coords.latitude;
+
+        const lng =
+            position.coords.longitude;
+
+        navigationCurrentLocation = {
+            lat: lat,
+            lng: lng
+        };
+
+        if (navigationCurrentMarker) {
+
+            navigationCurrentMarker.setLatLng([
+                lat,
+                lng
+            ]);
+
+        } else {
+
+            navigationCurrentMarker =
+                L.circleMarker(
+                    [lat, lng],
+                    {
+                        radius: 9,
+                        color: "#ffffff",
+                        weight: 3,
+                        fillColor: "#16a34a",
+                        fillOpacity: 1
+                    }
+                )
+                .addTo(map)
+                .bindPopup("Your current navigation location");
+
+        }
+
+        // Refresh the route only after moving at least 100 metres.
+        if (navigationDestination &&
+            !routeRequestInProgress) {
+
+            let shouldRecalculate = false;
+
+            if (!lastRouteOrigin) {
+
+                shouldRecalculate = true;
+
+            } else {
+
+                const distanceMoved =
+                    calculateDistance(
+                        lastRouteOrigin.lat,
+                        lastRouteOrigin.lng,
+                        lat,
+                        lng
+                    );
+
+                if (distanceMoved >= 100) {
+
+                    shouldRecalculate = true;
+
+                }
+
+            }
+
+            if (shouldRecalculate) {
+
+                calculateRoute(lat, lng);
+
+            }
+
+        }
+
+    }
+
+
+    // =====================================================
+    // START NAVIGATION
+    // =====================================================
+
+    function startNavigation() {
+
+        if (!navigationDestination) {
+
+            navigationStatus.textContent =
+                "Please search for a destination first.";
+
+            return;
+
+        }
+
+        if (!navigator.geolocation) {
+
+            navigationStatus.textContent =
+                "Your device does not support location services.";
+
+            return;
+
+        }
+
+        if (navigationActive) {
+
+            navigationStatus.textContent =
+                "Navigation is already running.";
+
+            return;
+
+        }
+
+        navigationActive = true;
+
+        startNavigationButton.disabled = true;
+
+        navigationStatus.textContent =
+            "Getting your current location...";
+
+        navigator.geolocation.getCurrentPosition(
+
+            position => {
+
+                updateNavigationLocation(position);
+
+                calculateRoute(
+                    position.coords.latitude,
+                    position.coords.longitude
+                );
+
+                navigationWatcher =
+                    navigator.geolocation.watchPosition(
+
+                        updatedPosition => {
+
+                            updateNavigationLocation(
+                                updatedPosition
+                            );
+
+                        },
+
+                        error => {
+
+                            navigationStatus.textContent =
+                                "Live location error: " +
+                                error.message +
+                                ". Check GPS and location permission.";
+
+                        },
+
+                        {
+                            enableHighAccuracy: true,
+                            maximumAge: 5000,
+                            timeout: 20000
+                        }
+
+                    );
+
+                navigationStatus.textContent =
+                    "Navigation started. Getting your route...";
+
+            },
+
+            error => {
+
+                navigationActive = false;
+
+                startNavigationButton.disabled = false;
+
+                navigationStatus.textContent =
+                    "Unable to get your current location: " +
+                    error.message +
+                    ". Enable GPS and allow location permission.";
+
+            },
+
+            {
+                enableHighAccuracy: true,
+                timeout: 20000,
+                maximumAge: 0
+            }
+
+        );
+
+    }
+
+
+    startNavigationButton.addEventListener(
+        "click",
+        startNavigation
+    );
+
+
+    // =====================================================
+    // STOP NAVIGATION
+    // =====================================================
+
+    function stopNavigation() {
+
+        if (navigationWatcher !== null) {
+
+            navigator.geolocation.clearWatch(
+                navigationWatcher
+            );
+
+            navigationWatcher = null;
+
+        }
+
+        navigationActive = false;
+
+        startNavigationButton.disabled = false;
+
+        if (navigationCurrentMarker) {
+
+            map.removeLayer(
+                navigationCurrentMarker
+            );
+
+            navigationCurrentMarker = null;
+
+        }
+
+        if (navigationDestinationMarker) {
+
+            map.removeLayer(
+                navigationDestinationMarker
+            );
+
+            navigationDestinationMarker = null;
+
+        }
+
+        clearNavigationRoute();
+
+        navigationDestination = null;
+
+        navigationCurrentLocation = null;
+
+        navigationStatus.textContent =
+            "Navigation stopped. Search for a destination to begin again.";
+
+    }
+
+
+    stopNavigationButton.addEventListener(
+        "click",
+        stopNavigation
+    );
+
+
+    // =====================================================
+    // CAMERA
+    // =====================================================
+
+    async function closeCamera() {
+
+        if (cameraStream) {
+
+            cameraStream.getTracks().forEach(
+                track => track.stop()
+            );
+
+            cameraStream = null;
+
+        }
+
+        video.srcObject = null;
+
+        cameraArea.style.display = "none";
+
+        openCameraButton.disabled = false;
+
+    }
+
+
+    openCameraButton.addEventListener(
+        "click",
+        async () => {
+
+            statusMessage.textContent = "";
+
+            if (!navigator.mediaDevices ||
+                !navigator.mediaDevices.getUserMedia) {
+
+                statusMessage.textContent =
+                    "Camera is unavailable. Open this page in your Android app " +
+                    "using HTTPS or a supported secure context, and check WebView permissions.";
+
+                return;
+
+            }
+
+            try {
+
+                cameraStream =
+                    await navigator.mediaDevices.getUserMedia({
+
+                        video: {
+                            facingMode: {
+                                ideal: "environment"
+                            }
+                        },
+
+                        audio: false
+
+                    });
+
+                video.srcObject = cameraStream;
+
+                cameraArea.style.display = "block";
+
+                openCameraButton.disabled = true;
+
+                photoStatus.textContent =
+                    "Camera is ready. Take a photo.";
+
+            } catch (error) {
+
+                statusMessage.textContent =
+                    "Cannot open camera: " +
+                    error.message +
+                    ". Check Android camera permission and WebView settings.";
+
+            }
+
+        }
+    );
+
+
+    // =====================================================
+    // CAPTURE PHOTO
+    // =====================================================
+
+    captureButton.addEventListener(
+        "click",
+        () => {
+
+            if (!cameraStream ||
+                !video.videoWidth) {
+
+                statusMessage.textContent =
+                    "Camera is not ready. Please wait and try again.";
+
+                return;
+
+            }
+
+            const canvas =
+                document.getElementById("photoCanvas");
+
+            canvas.width = video.videoWidth;
+
+            canvas.height = video.videoHeight;
+
+            const context =
+                canvas.getContext("2d");
+
+            context.drawImage(
+                video,
+                0,
+                0,
+                canvas.width,
+                canvas.height
+            );
+
+            canvas.toBlob(
+
+                blob => {
+
+                    if (!blob) {
+
+                        statusMessage.textContent =
+                            "Unable to capture photo.";
+
+                        return;
+
+                    }
+
+                    capturedPhoto = blob;
+
+                    if (previewObjectUrl) {
+
+                        URL.revokeObjectURL(
+                            previewObjectUrl
+                        );
+
+                    }
+
+                    previewObjectUrl =
+                        URL.createObjectURL(blob);
+
+                    photoPreview.src =
+                        previewObjectUrl;
+
+                    photoPreview.hidden = false;
+
+                    photoStatus.textContent =
+                        "Live camera photo captured.";
+
+                    closeCamera();
+
+                },
+
+                "image/jpeg",
+
+                0.85
+
+            );
+
+        }
+    );
+
+
+    document
+        .getElementById("closeCameraButton")
+        .addEventListener("click", closeCamera);
+
+
+    // =====================================================
+    // SUBMIT BARRIER REPORT
+    // =====================================================
+
+    document
+        .getElementById("reportForm")
+        .addEventListener(
+            "submit",
+            async event => {
+
+                event.preventDefault();
+
+                statusMessage.textContent = "";
+
+                if (!latitudeInput.value ||
+                    !longitudeInput.value) {
+
+                    statusMessage.textContent =
+                        "Please select the barrier location on the map first.";
+
+                    return;
+
+                }
+
+                if (!capturedPhoto) {
+
+                    statusMessage.textContent =
+                        "Please take a live camera photo before submitting.";
+
+                    return;
+
+                }
+
+                const formData = new FormData();
+
+                formData.append(
+                    "type",
+                    document.getElementById("type").value
+                );
+
+                formData.append(
+                    "severity",
+                    document.getElementById("severity").value
+                );
+
+                formData.append(
+                    "description",
+                    document.getElementById("description").value.trim()
+                );
+
+                formData.append(
+                    "latitude",
+                    latitudeInput.value
+                );
+
+                formData.append(
+                    "longitude",
+                    longitudeInput.value
+                );
+
+                formData.append(
+                    "image",
+                    capturedPhoto,
+                    "barrier-photo.jpg"
+                );
+
+                const token =
+                    localStorage.getItem("accessToken");
+
+                submitButton.disabled = true;
+
+                submitButton.textContent =
+                    "Submitting...";
+
+                try {
+
+                    const headers = {};
+
+                    if (token) {
+
+                        headers.Authorization =
+                            "Bearer " + token;
+
+                    }
+
+                    const response = await fetch(
+                        API_BASE + "/api/reports",
+                        {
+                            method: "POST",
+                            headers: headers,
+                            body: formData
+                        }
+                    );
+
+                    const result =
+                        await response.json().catch(
+                            () => ({})
+                        );
+
+                    if (!response.ok) {
+
+                        throw new Error(
+                            result.message ||
+                            "Server rejected the report."
+                        );
+
+                    }
+
+                    statusMessage.textContent =
+                        "Barrier report submitted successfully.";
+
+                    document
+                        .getElementById("reportForm")
+                        .reset();
+
+                    latitudeInput.value = "";
+
+                    longitudeInput.value = "";
+
+                    capturedPhoto = null;
+
+                    if (previewObjectUrl) {
+
+                        URL.revokeObjectURL(
+                            previewObjectUrl
+                        );
+
+                        previewObjectUrl = null;
+
+                    }
+
+                    photoPreview.removeAttribute("src");
+
+                    photoPreview.hidden = true;
+
+                    photoStatus.textContent =
+                        "No photo captured.";
+
+                    if (marker) {
+
+                        map.removeLayer(marker);
+
+                        marker = null;
+
+                    }
+
+                } catch (error) {
+
+                    statusMessage.textContent =
+                        "Report submission failed: " +
+                        error.message +
+                        ". Check the server address, network, and backend route.";
+
+                } finally {
+
+                    submitButton.disabled = false;
+
+                    submitButton.textContent =
+                        "Submit Barrier Report";
+
+                }
+
+            }
+        );
+
+
+    // =====================================================
+    // CLEANUP
+    // =====================================================
+
+    window.addEventListener(
+        "pagehide",
+        () => {
+
+            closeCamera();
+
+            stopNavigation();
+
+        }
+    );
+
+})();
+</script>
+
+</body>
+</html>

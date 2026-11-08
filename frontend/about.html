@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>About Us - Accessible Transit</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f7fa;
+            color: #1f2937;
+            line-height: 1.6;
+        }
+
+        /* HEADER */
+        .header {
+            background: white;
+            padding: 18px 7%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1769aa;
+        }
+
+        .nav {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+        }
+
+        .nav a {
+            text-decoration: none;
+            color: #333;
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        .nav a:hover {
+            color: #1769aa;
+        }
+
+        .login-button,
+        .signup-button {
+            padding: 9px 16px;
+            border-radius: 6px;
+        }
+
+        .login-button {
+            border: 1px solid #1769aa;
+            color: #1769aa !important;
+        }
+
+        .signup-button {
+            background: #1769aa;
+            color: white !important;
+        }
+
+        /* HERO */
+        .hero {
+            background: #1769aa;
+            color: white;
+            text-align: center;
+            padding: 70px 20px;
+        }
+
+        .hero h1 {
+            font-size: 42px;
+            margin-bottom: 15px;
+        }
+
+        .hero p {
+            font-size: 18px;
+            max-width: 750px;
+            margin: auto;
+        }
+
+        /* MAIN CONTAINER */
+        .container {
+            width: 85%;
+            max-width: 1100px;
+            margin: 50px auto;
+        }
+
+        /* SECTIONS */
+        .section {
+            background: white;
+            padding: 35px;
+            margin-bottom: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.07);
+        }
+
+        .section h2 {
+            color: #1769aa;
+            margin-bottom: 15px;
+            font-size: 28px;
+        }
+
+        .section p {
+            color: #555;
+            margin-bottom: 10px;
+        }
+
+        /* OBJECTIVES */
+        .objectives {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .objective-card {
+            padding: 25px;
+            background: #f5f9fc;
+            border-left: 4px solid #1769aa;
+            border-radius: 8px;
+        }
+
+        .objective-card h3 {
+            color: #1769aa;
+            margin-bottom: 8px;
+        }
+
+        .objective-card p {
+            margin: 0;
+        }
+
+        /* TECHNOLOGIES */
+        .technology-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .technology {
+            background: #eaf4fb;
+            color: #1769aa;
+            padding: 10px 16px;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+
+        /* TEAM */
+        .team {
+            text-align: center;
+        }
+
+        .team-members {
+            margin-top: 20px;
+        }
+
+        .team-members p {
+            margin: 8px 0;
+        }
+
+        .guide {
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+        }
+
+        .guide strong {
+            color: #1769aa;
+        }
+
+        /* CTA */
+        .cta {
+            text-align: center;
+            background: #eaf4fb;
+            padding: 40px 20px;
+            border-radius: 12px;
+            margin-bottom: 50px;
+        }
+
+        .cta h2 {
+            color: #1769aa;
+            margin-bottom: 10px;
+        }
+
+        .cta p {
+            color: #555;
+            margin-bottom: 20px;
+        }
+
+        .report-button {
+            display: inline-block;
+            background: #1769aa;
+            color: white;
+            text-decoration: none;
+            padding: 12px 25px;
+            border-radius: 7px;
+            font-weight: bold;
+        }
+
+        .report-button:hover {
+            background: #0f4f82;
+        }
+
+        /* FOOTER */
+        .footer {
+            background: #17202a;
+            color: white;
+            text-align: center;
+            padding: 25px;
+        }
+
+        .footer p {
+            margin: 5px 0;
+            color: #d1d5db;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 800px) {
+
+            .header {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .nav {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 15px;
+            }
+
+            .hero h1 {
+                font-size: 32px;
+            }
+
+            .container {
+                width: 92%;
+            }
+
+            .objectives {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- HEADER -->
+    <header class="header">
+
+        <div class="logo">
+            Accessible Transit
+        </div>
+
+        <nav class="nav">
+
+            <a href="index.html">Home</a>
+
+            <a href="features.html">Features</a>
+
+            <a href="about.html">About</a>
+
+            <a href="contact.html">Contact</a>
+
+            <a href="login.html" class="login-button">
+                Login
+            </a>
+
+            <a href="signup.html" class="signup-button">
+                Sign Up
+            </a>
+
+        </nav>
+
+    </header>
+
+
+    <!-- HERO -->
+    <section class="hero">
+
+        <h1>About Accessible Transit</h1>
+
+        <p>
+            Creating safer and more accessible public spaces
+            through community-powered accessibility reporting.
+        </p>
+
+    </section>
+
+
+    <!-- MAIN CONTENT -->
+    <main class="container">
+
+
+        <!-- ABOUT PROJECT -->
+        <section class="section">
+
+            <h2>About the Project</h2>
+
+            <p>
+                Accessible Transit is a web-based accessibility
+                reporting platform designed to help people identify
+                and report barriers in public spaces.
+            </p>
+
+            <p>
+                Users can select a location on an interactive map,
+                describe an accessibility problem, choose its severity,
+                and optionally upload an image as visual evidence.
+            </p>
+
+            <p>
+                The goal is to create greater awareness of accessibility
+                barriers and support safer and more inclusive mobility
+                for everyone.
+            </p>
+
+        </section>
+
+
+        <!-- PROBLEM -->
+        <section class="section">
+
+            <h2>The Problem We Address</h2>
+
+            <p>
+                People using wheelchairs, strollers, walking aids,
+                or other mobility supports may face barriers such as
+                broken ramps, blocked sidewalks, uneven roads, and
+                inaccessible elevators.
+            </p>
+
+            <p>
+                These problems may not always be easy to identify or
+                communicate. Accessible Transit provides a simple way
+                for users to report such problems and share their
+                locations with the community.
+            </p>
+
+        </section>
+
+
+        <!-- OBJECTIVES -->
+        <section class="section">
+
+            <h2>Project Objectives</h2>
+
+            <div class="objectives">
+
+                <div class="objective-card">
+
+                    <h3>Identify Barriers</h3>
+
+                    <p>
+                        Help users identify accessibility problems
+                        in public areas.
+                    </p>
+
+                </div>
+
+
+                <div class="objective-card">
+
+                    <h3>Easy Reporting</h3>
+
+                    <p>
+                        Provide a simple interface for reporting
+                        accessibility issues.
+                    </p>
+
+                </div>
+
+
+                <div class="objective-card">
+
+                    <h3>Visual Evidence</h3>
+
+                    <p>
+                        Allow users to upload images of reported
+                        accessibility barriers.
+                    </p>
+
+                </div>
+
+
+                <div class="objective-card">
+
+                    <h3>Community Awareness</h3>
+
+                    <p>
+                        Help communities become more aware of
+                        accessibility challenges.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- TECHNOLOGIES -->
+        <section class="section">
+
+            <h2>Technologies Used</h2>
+
+            <div class="technology-list">
+
+                <span class="technology">HTML</span>
+
+                <span class="technology">CSS</span>
+
+                <span class="technology">JavaScript</span>
+
+                <span class="technology">Node.js</span>
+
+                <span class="technology">Express.js</span>
+
+                <span class="technology">MongoDB</span>
+
+                <span class="technology">Leaflet.js</span>
+
+                <span class="technology">OpenStreetMap</span>
+
+                <span class="technology">JWT Authentication</span>
+
+                <span class="technology">Multer</span>
+
+            </div>
+
+        </section>
+
+
+        <!-- TEAM -->
+        
+
+
+
+
+        <!-- CTA -->
+        <section class="cta">
+
+            <h2>Help Make Public Spaces More Accessible</h2>
+
+            <p>
+                Found a broken ramp, blocked sidewalk, uneven road,
+                or another accessibility problem?
+            </p>
+
+            <a href="map.html" class="report-button">
+                Report a Problem
+            </a>
+
+        </section>
+
+    </main>
+
+
+    <!-- FOOTER -->
+    <footer class="footer">
+
+        <p>
+            <strong>Accessible Transit</strong>
+        </p>
+
+        <p>
+            Making Transportation Accessible for Everyone
+        </p>
+
+        <p>
+            © 2026 Accessible Transit. All Rights Reserved.
+        </p>
+
+    </footer>
+
+</body>
+
+    </div>
+
+    
+
+    </div>
+
+</section>

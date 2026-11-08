@@ -1,0 +1,1931 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Accessible Transit | Admin Dashboard</title>
+
+    <style>
+        :root {
+            --primary: #176b55;
+            --primary-dark: #105440;
+            --background: #f4f7f6;
+            --white: #ffffff;
+            --text: #24332e;
+            --muted: #718078;
+            --border: #e1e9e5;
+            --red: #dc3545;
+            --orange: #f39c12;
+            --green: #198754;
+            --blue: #2878d0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: var(--background);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        button, input, select, textarea {
+            font: inherit;
+        }
+
+        button {
+            cursor: pointer;
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* LOGIN PAGE */
+
+        .login-page {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .login-card {
+            background: white;
+            width: 100%;
+            max-width: 420px;
+            padding: 35px;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            box-shadow: 0 10px 35px rgba(0, 0, 0, 0.07);
+        }
+
+        .login-logo {
+            text-align: center;
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+
+        .login-card h1 {
+            text-align: center;
+            color: var(--primary);
+            font-size: 25px;
+        }
+
+        .login-subtitle {
+            text-align: center;
+            color: var(--muted);
+            font-size: 13px;
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            margin-bottom: 17px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: bold;
+            font-size: 13px;
+            margin-bottom: 7px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 11px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            outline: none;
+            background: white;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: var(--primary);
+        }
+
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .full-button {
+            width: 100%;
+        }
+
+        .login-error {
+            color: var(--red);
+            font-size: 13px;
+            margin-bottom: 12px;
+            overflow-wrap: anywhere;
+        }
+
+        .security-note {
+            text-align: center;
+            color: var(--muted);
+            font-size: 12px;
+            margin-top: 20px;
+        }
+
+        /* HEADER */
+
+        .admin-header {
+            background: white;
+            padding: 18px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: #e8f5ef;
+            display: grid;
+            place-items: center;
+            font-size: 26px;
+        }
+
+        .brand h1 {
+            font-size: 21px;
+            color: var(--primary);
+        }
+
+        .brand p {
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .header-actions,
+        .panel-actions,
+        .button-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .admin-label {
+            padding: 7px 14px;
+            border-radius: 20px;
+            background: #e8f5ef;
+            color: var(--primary);
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        /* BUTTONS */
+
+        .button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        .button:hover {
+            filter: brightness(0.95);
+        }
+
+        .primary-button {
+            background: var(--primary);
+            color: white;
+        }
+
+        .download-button {
+            background: #e4f4eb;
+            color: var(--primary);
+        }
+
+        .refresh-button {
+            background: white;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+        }
+
+        .logout-button {
+            background: #ffe8e8;
+            color: #b42332;
+        }
+
+        .cancel-button {
+            background: #edf1ef;
+            color: var(--text);
+        }
+
+        /* DASHBOARD */
+
+        .container {
+            width: 92%;
+            max-width: 1450px;
+            margin: 30px auto;
+        }
+
+        .welcome {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 25px;
+        }
+
+        .welcome h2 {
+            font-size: 27px;
+            color: #183d30;
+        }
+
+        .welcome p {
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 18px;
+            margin-bottom: 28px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 22px;
+            border-radius: 13px;
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+        }
+
+        .stat-card p {
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .stat-card h3 {
+            font-size: 32px;
+            margin-top: 7px;
+        }
+
+        .total { color: var(--blue); }
+        .pending { color: var(--orange); }
+        .progress { color: var(--blue); }
+        .resolved { color: var(--green); }
+
+        .reports-panel {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 13px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+        }
+
+        .panel-header {
+            padding: 22px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .panel-header h2 {
+            font-size: 20px;
+        }
+
+        .panel-header p {
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .filters {
+            padding: 18px 22px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .filters input,
+        .filters select {
+            padding: 11px 13px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            outline: none;
+            background: white;
+        }
+
+        .filters input {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .filters select {
+            min-width: 150px;
+        }
+
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            min-width: 1200px;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: #f7faf8;
+        }
+
+        th {
+            text-align: left;
+            padding: 14px;
+            color: #617168;
+            font-size: 12px;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 15px 14px;
+            font-size: 13px;
+            border-top: 1px solid #edf1ef;
+            vertical-align: top;
+        }
+
+        tbody tr:hover {
+            background: #f8fcfa;
+        }
+
+        .report-description {
+            max-width: 220px;
+            overflow-wrap: anywhere;
+        }
+
+        .location {
+            color: var(--muted);
+            font-size: 12px;
+            min-width: 120px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .severity-high {
+            background: #ffe5e7;
+            color: #b42332;
+        }
+
+        .severity-medium {
+            background: #fff0d8;
+            color: #a75b00;
+        }
+
+        .severity-low {
+            background: #dcf6e8;
+            color: #147343;
+        }
+
+        .status-pending {
+            background: #fff0d8;
+            color: #9a5a00;
+        }
+
+        .status-in-progress {
+            background: #e6efff;
+            color: #215eb3;
+        }
+
+        .status-resolved {
+            background: #dcf6e8;
+            color: #147343;
+        }
+
+        .report-image {
+            width: 65px;
+            height: 55px;
+            object-fit: cover;
+            border-radius: 7px;
+            border: 1px solid var(--border);
+        }
+
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 7px;
+            min-width: 125px;
+        }
+
+        .small-button {
+            padding: 7px 9px;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .progress-button {
+            background: #e6efff;
+            color: #215eb3;
+        }
+
+        .resolve-button {
+            background: #dcf6e8;
+            color: #147343;
+        }
+
+        .details-button {
+            background: #eef1f0;
+            color: #34483d;
+        }
+
+        .message {
+            text-align: center;
+            padding: 35px 15px;
+            color: var(--muted);
+        }
+
+        .error {
+            color: var(--red);
+        }
+
+        .footer {
+            padding: 25px;
+            text-align: center;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        /* UPDATE MODAL */
+
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            padding: 18px;
+            background: rgba(0, 0, 0, 0.55);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            width: 100%;
+            max-width: 520px;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 25px;
+            border-radius: 14px;
+        }
+
+        .modal-content h2 {
+            margin-bottom: 5px;
+        }
+
+        .modal-subtitle {
+            color: var(--muted);
+            font-size: 13px;
+            margin-bottom: 20px;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .toast {
+            position: fixed;
+            right: 20px;
+            bottom: 20px;
+            max-width: 350px;
+            background: var(--primary);
+            color: white;
+            padding: 14px 18px;
+            border-radius: 9px;
+            z-index: 2000;
+            display: none;
+            overflow-wrap: anywhere;
+        }
+
+        .toast.show {
+            display: block;
+        }
+
+        .toast.error-toast {
+            background: var(--red);
+        }
+
+        @media (max-width: 950px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                width: 94%;
+                margin: 20px auto;
+            }
+
+            .welcome h2 {
+                font-size: 22px;
+            }
+
+            .stats-grid {
+                gap: 10px;
+            }
+
+            .stat-card {
+                padding: 14px;
+            }
+
+            .stat-card h3 {
+                font-size: 26px;
+            }
+
+            .panel-header,
+            .filters {
+                padding: 15px;
+            }
+
+            .filters input,
+            .filters select {
+                width: 100%;
+            }
+
+            .login-card {
+                padding: 25px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- =======================================
+     ADMIN LOGIN
+======================================= -->
+
+<section class="login-page" id="loginPage">
+    <div class="login-card">
+
+        <div class="login-logo">♿</div>
+
+        <h1>Accessible Transit</h1>
+
+        <p class="login-subtitle">
+            Administrator Login
+        </p>
+
+        <form id="adminLoginForm">
+
+            <div class="form-group">
+                <label for="adminEmail">Administrator Email</label>
+
+                <input
+                    type="email"
+                    id="adminEmail"
+                    placeholder="Enter administrator email"
+                    autocomplete="username"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="adminPassword">Password</label>
+
+                <input
+                    type="password"
+                    id="adminPassword"
+                    placeholder="Enter your password"
+                    autocomplete="current-password"
+                    required
+                >
+            </div>
+
+            <p id="loginError" class="login-error" role="alert"></p>
+
+            <button
+                type="submit"
+                class="button primary-button full-button"
+                id="loginBtn"
+            >
+                Login as Administrator
+            </button>
+
+        </form>
+
+        <p class="security-note">
+            Restricted access. Only authorized administrators can continue.
+        </p>
+
+    </div>
+</section>
+
+
+<!-- =======================================
+     ADMIN DASHBOARD
+======================================= -->
+
+<div id="dashboardPage" class="hidden">
+
+    <header class="admin-header">
+
+        <div class="brand">
+            <div class="logo">♿</div>
+
+            <div>
+                <h1>Accessible Transit</h1>
+                <p>Accessibility Reporting Administration</p>
+            </div>
+        </div>
+
+        <div class="header-actions">
+            <span class="admin-label" id="adminIdentity">
+                Administrator
+            </span>
+
+            <button
+                class="button logout-button"
+                id="logoutBtn"
+                type="button"
+            >
+                Logout
+            </button>
+        </div>
+
+    </header>
+
+
+    <main class="container">
+
+        <section class="welcome">
+
+            <div>
+                <h2>Welcome, Administrator!</h2>
+
+                <p>
+                    Monitor accessibility problems and update their resolution status.
+                </p>
+            </div>
+
+            <button
+                class="button refresh-button"
+                id="refreshBtn"
+                type="button"
+            >
+                ↻ Refresh Reports
+            </button>
+
+        </section>
+
+
+        <!-- STATISTICS -->
+
+        <section class="stats-grid">
+
+            <div class="stat-card">
+                <p>Total Reports</p>
+                <h3 class="total" id="totalCount">0</h3>
+            </div>
+
+            <div class="stat-card">
+                <p>Pending Reports</p>
+                <h3 class="pending" id="pendingCount">0</h3>
+            </div>
+
+            <div class="stat-card">
+                <p>In Progress</p>
+                <h3 class="progress" id="progressCount">0</h3>
+            </div>
+
+            <div class="stat-card">
+                <p>Resolved Reports</p>
+                <h3 class="resolved" id="resolvedCount">0</h3>
+            </div>
+
+        </section>
+
+
+        <!-- REPORTS TABLE -->
+
+        <section class="reports-panel">
+
+            <div class="panel-header">
+
+                <div>
+                    <h2>Reported Accessibility Problems</h2>
+                    <p>View, manage, and download submitted reports.</p>
+                </div>
+
+                <div class="panel-actions">
+
+                    <button
+                        class="button download-button"
+                        id="downloadBtn"
+                        type="button"
+                    >
+                        ↓ Download CSV
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- FILTERS -->
+
+            <div class="filters">
+
+                <input
+                    type="search"
+                    id="searchInput"
+                    placeholder="Search issue, description, or location..."
+                    aria-label="Search reports"
+                >
+
+                <select id="statusFilter" aria-label="Filter by status">
+                    <option value="all">All Statuses</option>
+                    <option value="Pending">Pending</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Resolved">Resolved</option>
+                </select>
+
+                <select id="severityFilter" aria-label="Filter by severity">
+                    <option value="all">All Severities</option>
+                    <option value="High">High</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Low">Low</option>
+                </select>
+
+            </div>
+
+
+            <div class="table-wrapper">
+
+                <table>
+
+                    <thead>
+                        <tr>
+                            <th>Report ID</th>
+                            <th>Issue Type</th>
+                            <th>Description</th>
+                            <th>Location</th>
+                            <th>Severity</th>
+                            <th>Image</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Resolution Details</th>
+                            <th>Admin Actions</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="reportsTableBody">
+
+                        <tr>
+                            <td colspan="10" class="message">
+                                Please log in as an administrator.
+                            </td>
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <footer class="footer">
+        Accessible Transit — Building safer and more accessible communities.
+    </footer>
+
+</div>
+
+
+<!-- =======================================
+     UPDATE REPORT MODAL
+======================================= -->
+
+<div
+    class="modal"
+    id="reportModal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="modalTitle"
+>
+    <div class="modal-content">
+
+        <h2 id="modalTitle">Update Report</h2>
+
+        <p class="modal-subtitle">
+            Update the report status and record administrative details.
+        </p>
+
+        <form id="updateForm">
+
+            <input type="hidden" id="reportId">
+
+            <div class="form-group">
+                <label for="newStatus">Report Status</label>
+
+                <select id="newStatus" required>
+                    <option value="Pending">Pending</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Resolved">Resolved</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="resolutionNotes">
+                    Resolution / Administrative Notes
+                </label>
+
+                <textarea
+                    id="resolutionNotes"
+                    placeholder="Describe the action taken or work remaining..."
+                ></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="resolvedBy">Updated By</label>
+
+                <input
+                    type="text"
+                    id="resolvedBy"
+                    placeholder="Administrator name"
+                    required
+                >
+            </div>
+
+            <div class="modal-actions">
+
+                <button
+                    type="button"
+                    class="button cancel-button"
+                    id="cancelBtn"
+                >
+                    Cancel
+                </button>
+
+                <button
+                    type="submit"
+                    class="button primary-button"
+                    id="saveBtn"
+                >
+                    Save Update
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+
+<script>
+"use strict";
+
+/* ==========================================
+   CONFIGURATION
+========================================== */
+
+// The page is served by the Express backend.
+// Example: http://localhost:3000/frontend/admin.html
+
+const API_BASE_URL = "https://para-payment-joke-main.trycloudflare.com/api";
+
+const LOGIN_API_URL = `${API_BASE_URL}/admin/login`;
+const REPORTS_API_URL = `${API_BASE_URL}/admin/reports`;
+
+let allReports = [];
+let toastTimer;
+
+
+/* ==========================================
+   ELEMENTS
+========================================== */
+
+const loginPage = document.getElementById("loginPage");
+const dashboardPage = document.getElementById("dashboardPage");
+
+const adminLoginForm = document.getElementById("adminLoginForm");
+const loginError = document.getElementById("loginError");
+const loginBtn = document.getElementById("loginBtn");
+
+const tableBody = document.getElementById("reportsTableBody");
+const searchInput = document.getElementById("searchInput");
+const statusFilter = document.getElementById("statusFilter");
+const severityFilter = document.getElementById("severityFilter");
+
+const modal = document.getElementById("reportModal");
+const updateForm = document.getElementById("updateForm");
+
+
+/* ==========================================
+   SESSION HELPERS
+========================================== */
+
+function getAdminToken() {
+    return (
+        localStorage.getItem("accessToken") ||
+        localStorage.getItem("token") ||
+        ""
+    );
+}
+
+function getSavedUser() {
+    try {
+        return JSON.parse(localStorage.getItem("user") || "null");
+    } catch {
+        return null;
+    }
+}
+
+function saveLoginSession(token, user) {
+    localStorage.setItem("accessToken", token);
+    localStorage.setItem("user", JSON.stringify(user));
+}
+
+function clearLoginSession() {
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+}
+
+function showLogin(message = "") {
+    loginPage.classList.remove("hidden");
+    dashboardPage.classList.add("hidden");
+
+    loginError.textContent = message;
+}
+
+function showDashboard(user) {
+    loginPage.classList.add("hidden");
+    dashboardPage.classList.remove("hidden");
+
+    const displayName =
+        user.name ||
+        user.username ||
+        user.email ||
+        "Administrator";
+
+    document.getElementById("adminIdentity").textContent = displayName;
+    document.getElementById("resolvedBy").value =
+        user.name || user.username || "";
+
+}
+
+
+/* ==========================================
+   ADMIN LOGIN
+========================================== */
+
+adminLoginForm.addEventListener("submit", async function(event) {
+    event.preventDefault();
+
+    loginError.textContent = "";
+
+    const email = document.getElementById("adminEmail").value.trim();
+    const password = document.getElementById("adminPassword").value;
+
+    if (!email || !password) {
+        loginError.textContent = "Enter your administrator email and password.";
+        return;
+    }
+
+    loginBtn.disabled = true;
+    loginBtn.textContent = "Signing in...";
+
+    try {
+        const response = await fetch(LOGIN_API_URL, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+            body: JSON.stringify({
+                email: email,
+                password: password
+            })
+        });
+
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+            throw new Error(
+                data.message ||
+                data.error ||
+                "Login failed. Check your email and password."
+            );
+        }
+
+        const token =
+            data.token ||
+            data.accessToken ||
+            data.access_token ||
+            data.jwt;
+
+        const user = data.user || data.admin || {};
+
+        if (!token) {
+            throw new Error(
+                "The server did not return a login token. Check the admin login API response."
+            );
+        }
+
+        if (user.role !== "admin") {
+            throw new Error(
+                "This account is not authorized as an administrator."
+            );
+        }
+
+        saveLoginSession(token, user);
+        showDashboard(user);
+
+        document.getElementById("adminPassword").value = "";
+
+        await loadReports();
+
+    } catch (error) {
+        console.error("Administrator login error:", error);
+
+        clearLoginSession();
+
+        showLogin(error.message || "Unable to log in.");
+
+    } finally {
+        loginBtn.disabled = false;
+        loginBtn.textContent = "Login as Administrator";
+    }
+});
+
+
+/* ==========================================
+   API REQUEST HELPER
+========================================== */
+
+async function apiRequest(url, options = {}) {
+    const token = getAdminToken();
+
+    if (!token) {
+        throw new Error("Please log in as an administrator.");
+    }
+
+    const headers = {
+        "Accept": "application/json",
+        ...(options.headers || {}),
+        "Authorization": `Bearer ${token}`
+    };
+
+    const response = await fetch(url, {
+        ...options,
+        headers
+    });
+
+    if (response.status === 401 || response.status === 403) {
+        clearLoginSession();
+
+        loginPage.classList.remove("hidden");
+        dashboardPage.classList.add("hidden");
+
+        showLogin(
+            "Your session expired or administrator access was denied. Please log in again."
+        );
+
+        throw new Error("Administrator authorization failed.");
+    }
+
+    return response;
+}
+
+
+/* ==========================================
+   VERIFY SAVED LOGIN
+========================================== */
+
+async function verifyAdminSession() {
+    const token = getAdminToken();
+
+    if (!token) {
+        showLogin();
+        return false;
+    }
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/me`, {
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "Accept": "application/json"
+            }
+        });
+
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+            throw new Error("Session expired.");
+        }
+
+        const user = data.user || data;
+
+        if (!user || user.role !== "admin") {
+            throw new Error("This account is not an administrator.");
+        }
+
+        showDashboard(user);
+
+        return true;
+
+    } catch (error) {
+        console.warn("Admin session verification:", error.message);
+
+        clearLoginSession();
+        showLogin("Please log in with your administrator account.");
+
+        return false;
+    }
+}
+
+
+/* ==========================================
+   GENERAL HELPERS
+========================================== */
+
+function escapeHTML(value) {
+    return String(value ?? "").replace(/[&<>"']/g, function(char) {
+        const entities = {
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#039;"
+        };
+
+        return entities[char];
+    });
+}
+
+function getStatus(report) {
+    const status = String(report.status || "Pending")
+        .trim()
+        .toLowerCase();
+
+    if (status === "resolved") {
+        return "Resolved";
+    }
+
+    if (
+        status === "in progress" ||
+        status === "in-progress" ||
+        status === "in_progress"
+    ) {
+        return "In Progress";
+    }
+
+    return "Pending";
+}
+
+function getSeverity(report) {
+    const severity = String(report.severity || "Medium")
+        .trim()
+        .toLowerCase();
+
+    if (severity === "high") return "High";
+    if (severity === "low") return "Low";
+
+    return "Medium";
+}
+
+function getIssueType(report) {
+    return (
+        report.type ||
+        report.issueType ||
+        report.category ||
+        "Accessibility Problem"
+    );
+}
+
+function getDescription(report) {
+    return report.description || "No description provided";
+}
+
+function getLatitude(report) {
+    return report.latitude ?? report.lat ?? null;
+}
+
+function getLongitude(report) {
+    return report.longitude ?? report.lng ?? null;
+}
+
+function getImageURL(report) {
+    let image = report.image || report.imageUrl || "";
+
+    if (typeof image === "object" && image !== null) {
+        image = image.url || image.path || "";
+    }
+
+    if (!image) return "";
+
+    image = String(image);
+
+    if (/^https?:\/\//i.test(image) || image.startsWith("data:")) {
+        return image;
+    }
+
+    const filename = image
+        .replace(/\\/g, "/")
+        .split("/")
+        .pop();
+
+    if (!filename || filename === "." || filename === "..") {
+        return "";
+    }
+
+    // Matches a backend that serves uploaded files at /uploads/<filename>.
+    return `/uploads/${encodeURIComponent(filename)}`;
+}
+
+function getDate(report) {
+    const date = report.createdAt || report.date || report.timestamp;
+
+    if (!date) return "Not available";
+
+    const parsed = new Date(date);
+
+    if (Number.isNaN(parsed.getTime())) {
+        return "Not available";
+    }
+
+    return parsed.toLocaleString();
+}
+
+function showToast(message, isError = false) {
+    const toast = document.getElementById("toast");
+
+    toast.textContent = message;
+    toast.className = "toast show";
+
+    if (isError) {
+        toast.classList.add("error-toast");
+    }
+
+    clearTimeout(toastTimer);
+
+    toastTimer = setTimeout(function() {
+        toast.className = "toast";
+    }, 3500);
+}
+
+
+/* ==========================================
+   LOAD REPORTS
+========================================== */
+
+async function loadReports() {
+    tableBody.innerHTML = `
+        <tr>
+            <td colspan="10" class="message">Loading reports...</td>
+        </tr>
+    `;
+
+    const refreshButton = document.getElementById("refreshBtn");
+    refreshButton.disabled = true;
+
+    try {
+        const response = await apiRequest(REPORTS_API_URL);
+
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+            throw new Error(
+                data.message ||
+                data.error ||
+                "Unable to retrieve reports."
+            );
+        }
+
+        if (Array.isArray(data)) {
+            allReports = data;
+        } else if (Array.isArray(data.reports)) {
+            allReports = data.reports;
+        } else if (Array.isArray(data.data)) {
+            allReports = data.data;
+        } else {
+            throw new Error("Unexpected reports response from the server.");
+        }
+
+        updateStatistics();
+        renderReports();
+
+    } catch (error) {
+        console.error("Loading reports failed:", error);
+
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="10" class="message error">
+                    Unable to load reports.<br><br>
+                    ${escapeHTML(error.message)}
+                </td>
+            </tr>
+        `;
+
+        showToast(error.message, true);
+
+    } finally {
+        refreshButton.disabled = false;
+    }
+}
+
+
+/* ==========================================
+   STATISTICS
+========================================== */
+
+function updateStatistics() {
+    const pending = allReports.filter(
+        report => getStatus(report) === "Pending"
+    ).length;
+
+    const inProgress = allReports.filter(
+        report => getStatus(report) === "In Progress"
+    ).length;
+
+    const resolved = allReports.filter(
+        report => getStatus(report) === "Resolved"
+    ).length;
+
+    document.getElementById("totalCount").textContent =
+        allReports.length;
+
+    document.getElementById("pendingCount").textContent =
+        pending;
+
+    document.getElementById("progressCount").textContent =
+        inProgress;
+
+    document.getElementById("resolvedCount").textContent =
+        resolved;
+}
+
+
+/* ==========================================
+   RENDER REPORTS
+========================================== */
+
+function renderReports() {
+    const searchTerm = searchInput.value.trim().toLowerCase();
+    const selectedStatus = statusFilter.value;
+    const selectedSeverity = severityFilter.value;
+
+    const filteredReports = allReports.filter(function(report) {
+        const searchableText = [
+            report._id,
+            getIssueType(report),
+            getDescription(report),
+            report.location,
+            report.address,
+            getLatitude(report),
+            getLongitude(report)
+        ].join(" ").toLowerCase();
+
+        return (
+            searchableText.includes(searchTerm) &&
+            (
+                selectedStatus === "all" ||
+                getStatus(report) === selectedStatus
+            ) &&
+            (
+                selectedSeverity === "all" ||
+                getSeverity(report) === selectedSeverity
+            )
+        );
+    });
+
+    if (filteredReports.length === 0) {
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="10" class="message">
+                    No reports found.
+                </td>
+            </tr>
+        `;
+
+        return;
+    }
+
+    tableBody.innerHTML = filteredReports.map(function(report) {
+        const id = String(report._id || report.id || "");
+        const severity = getSeverity(report);
+        const status = getStatus(report);
+
+        const severityClass = "severity-" + severity.toLowerCase();
+
+        const statusClass = status === "In Progress"
+            ? "status-in-progress"
+            : "status-" + status.toLowerCase();
+
+        const latitude = getLatitude(report);
+        const longitude = getLongitude(report);
+
+        const hasCoordinates =
+            latitude !== null &&
+            longitude !== null &&
+            Number.isFinite(Number(latitude)) &&
+            Number.isFinite(Number(longitude));
+
+        const locationText = hasCoordinates
+            ? Number(latitude).toFixed(5) + ", " +
+              Number(longitude).toFixed(5)
+            : (report.location || report.address || "Not provided");
+
+        const imageURL = getImageURL(report);
+
+        const imageHTML = imageURL
+            ? `
+                <a href="${escapeHTML(imageURL)}"
+                   target="_blank"
+                   rel="noopener noreferrer">
+                    <img
+                        class="report-image"
+                        src="${escapeHTML(imageURL)}"
+                        alt="Reported accessibility problem"
+                        loading="lazy"
+                    >
+                </a>
+            `
+            : `<span>No image</span>`;
+
+        const resolutionNotes =
+            report.resolutionNotes ||
+            report.resolutionDetails ||
+            report.adminNotes ||
+            "";
+
+        const updatedBy = report.resolvedBy || report.updatedBy || "";
+
+        const resolutionHTML = resolutionNotes
+            ? `<strong>${escapeHTML(updatedBy || "Admin")}</strong><br>${escapeHTML(resolutionNotes)}`
+            : "—";
+
+        const mapURL = hasCoordinates
+            ? "https://www.openstreetmap.org/?mlat=" +
+              encodeURIComponent(latitude) +
+              "&mlon=" +
+              encodeURIComponent(longitude) +
+              "#map=18/" +
+              encodeURIComponent(latitude) +
+              "/" +
+              encodeURIComponent(longitude)
+            : "";
+
+        return `
+            <tr>
+                <td>${escapeHTML(id ? id.slice(-8) : "N/A")}</td>
+
+                <td>${escapeHTML(getIssueType(report))}</td>
+
+                <td class="report-description">
+                    ${escapeHTML(getDescription(report))}
+                </td>
+
+                <td class="location">
+                    ${escapeHTML(locationText)}
+
+                    ${mapURL
+                        ? `<br><a href="${escapeHTML(mapURL)}"
+                             target="_blank"
+                             rel="noopener noreferrer">View Map</a>`
+                        : ""}
+                </td>
+
+                <td>
+                    <span class="badge ${severityClass}">
+                        ${escapeHTML(severity)}
+                    </span>
+                </td>
+
+                <td>${imageHTML}</td>
+
+                <td>${escapeHTML(getDate(report))}</td>
+
+                <td>
+                    <span class="badge ${statusClass}">
+                        ${escapeHTML(status)}
+                    </span>
+                </td>
+
+                <td class="report-description">
+                    ${resolutionHTML}
+                </td>
+
+                <td>
+                    <div class="action-buttons">
+
+                        ${status !== "In Progress" && status !== "Resolved"
+                            ? `<button
+                                   class="small-button progress-button"
+                                   data-action="progress"
+                                   data-id="${escapeHTML(id)}">
+                                   Start Work
+                               </button>`
+                            : ""}
+
+                        ${status !== "Resolved"
+                            ? `<button
+                                   class="small-button resolve-button"
+                                   data-action="resolve"
+                                   data-id="${escapeHTML(id)}">
+                                   Mark Resolved
+                               </button>`
+                            : ""}
+
+                        <button
+                            class="small-button details-button"
+                            data-action="edit"
+                            data-id="${escapeHTML(id)}">
+                            Update Details
+                        </button>
+
+                    </div>
+                </td>
+            </tr>
+        `;
+    }).join("");
+}
+
+
+/* ==========================================
+   UPDATE MODAL
+========================================== */
+
+function openUpdateModal(id, requestedStatus) {
+    const report = allReports.find(function(item) {
+        return String(item._id || item.id) === String(id);
+    });
+
+    if (!report) {
+        showToast("Report not found.", true);
+        return;
+    }
+
+    document.getElementById("reportId").value =
+        String(report._id || report.id);
+
+    document.getElementById("newStatus").value =
+        requestedStatus || getStatus(report);
+
+    document.getElementById("resolutionNotes").value =
+        report.resolutionNotes ||
+        report.resolutionDetails ||
+        report.adminNotes ||
+        "";
+
+    const savedUser = getSavedUser();
+
+    document.getElementById("resolvedBy").value =
+        report.resolvedBy ||
+        report.updatedBy ||
+        (savedUser && (savedUser.name || savedUser.username)) ||
+        "";
+
+    document.getElementById("modalTitle").textContent =
+        requestedStatus === "Resolved"
+            ? "Resolve Accessibility Problem"
+            : requestedStatus === "In Progress"
+                ? "Start Working on Report"
+                : "Update Report Details";
+
+    modal.classList.add("active");
+}
+
+function closeModal() {
+    modal.classList.remove("active");
+}
+
+tableBody.addEventListener("click", function(event) {
+    const button = event.target.closest("button[data-action]");
+
+    if (!button) return;
+
+    const action = button.dataset.action;
+    const id = button.dataset.id;
+
+    if (action === "progress") {
+        openUpdateModal(id, "In Progress");
+    } else if (action === "resolve") {
+        openUpdateModal(id, "Resolved");
+    } else if (action === "edit") {
+        openUpdateModal(id);
+    }
+});
+
+
+/* ==========================================
+   SAVE STATUS UPDATE
+========================================== */
+
+updateForm.addEventListener("submit", async function(event) {
+    event.preventDefault();
+
+    const id = document.getElementById("reportId").value;
+    const status = document.getElementById("newStatus").value;
+    const notes = document.getElementById("resolutionNotes").value.trim();
+    const updatedBy = document.getElementById("resolvedBy").value.trim();
+
+    if (!id) {
+        showToast("Missing report ID.", true);
+        return;
+    }
+
+    if (!updatedBy) {
+        showToast("Enter the administrator name.", true);
+        return;
+    }
+
+    if (status === "Resolved" && !notes) {
+        showToast("Describe how the problem was resolved.", true);
+        return;
+    }
+
+    if (status === "Resolved") {
+        const confirmed = confirm(
+            "Are you sure this accessibility problem has been resolved?\n\n" +
+            "The server will process the report according to its configured resolution policy."
+        );
+
+        if (!confirmed) return;
+    }
+
+    const saveButton = document.getElementById("saveBtn");
+
+    saveButton.disabled = true;
+    saveButton.textContent = "Saving...";
+
+    try {
+        const response = await apiRequest(
+            `${REPORTS_API_URL}/${encodeURIComponent(id)}/status`,
+            {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    status: status,
+                    resolutionNotes: notes,
+                    resolvedBy: updatedBy
+                })
+            }
+        );
+
+        const result = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+            throw new Error(
+                result.message ||
+                result.error ||
+                "The server could not update the report."
+            );
+        }
+
+        closeModal();
+
+        showToast(
+            result.message ||
+            (
+                status === "Resolved"
+                    ? "Report marked as resolved."
+                    : "Report updated successfully."
+            )
+        );
+
+        await loadReports();
+
+    } catch (error) {
+        console.error("Report update failed:", error);
+        showToast(error.message, true);
+
+    } finally {
+        saveButton.disabled = false;
+        saveButton.textContent = "Save Update";
+    }
+});
+
+
+/* ==========================================
+   DOWNLOAD CSV
+========================================== */
+
+function downloadCSV() {
+    const searchTerm = searchInput.value.trim().toLowerCase();
+    const selectedStatus = statusFilter.value;
+    const selectedSeverity = severityFilter.value;
+
+    const reportsToDownload = allReports.filter(function(report) {
+        const searchableText = [
+            report._id,
+            getIssueType(report),
+            getDescription(report),
+            report.location,
+            report.address,
+            getLatitude(report),
+            getLongitude(report)
+        ].join(" ").toLowerCase();
+
+        return (
+            searchableText.includes(searchTerm) &&
+            (
+                selectedStatus === "all" ||
+                getStatus(report) === selectedStatus
+            ) &&
+            (
+                selectedSeverity === "all" ||
+                getSeverity(report) === selectedSeverity
+            )
+        );
+    });
+
+    if (reportsToDownload.length === 0) {
+        showToast("There are no reports matching your filters.", true);
+        return;
+    }
+
+    const columns = [
+        "Report ID",
+        "Issue Type",
+        "Description",
+        "Latitude",
+        "Longitude",
+        "Severity",
+        "Status",
+        "Created At",
+        "Resolution Notes",
+        "Updated By"
+    ];
+
+    function csvCell(value) {
+        let text = String(value ?? "");
+
+        // Prevent spreadsheet formula injection.
+        if (/^[\s]*[=+\-@]/.test(text)) {
+            text = "'" + text;
+        }
+
+        return '"' + text.replace(/"/g, '""') + '"';
+    }
+
+    const rows = [columns];
+
+    reportsToDownload.forEach(function(report) {
+        rows.push([
+            report._id || report.id || "",
+            getIssueType(report),
+            getDescription(report),
+            getLatitude(report) ?? "",
+            getLongitude(report) ?? "",
+            getSeverity(report),
+            getStatus(report),
+            getDate(report),
+            report.resolutionNotes ||
+                report.resolutionDetails ||
+                report.adminNotes ||
+                "",
+            report.resolvedBy || report.updatedBy || ""
+        ]);
+    });
+
+    const csvContent = "\uFEFF" + rows
+        .map(row => row.map(csvCell).join(","))
+        .join("\r\n");
+
+    const blob = new Blob([csvContent], {
+        type: "text/csv;charset=utf-8;"
+    });
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+
+    link.href = url;
+    link.download = "accessible-transit-reports.csv";
+
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    URL.revokeObjectURL(url);
+
+    showToast("CSV report downloaded.");
+}
+
+
+/* ==========================================
+   EVENT LISTENERS
+========================================== */
+
+document.getElementById("refreshBtn").addEventListener(
+    "click",
+    loadReports
+);
+
+document.getElementById("downloadBtn").addEventListener(
+    "click",
+    downloadCSV
+);
+
+document.getElementById("cancelBtn").addEventListener(
+    "click",
+    closeModal
+);
+
+document.getElementById("logoutBtn").addEventListener("click", function() {
+    if (!confirm("Are you sure you want to log out?")) {
+        return;
+    }
+
+    clearLoginSession();
+    allReports = [];
+
+    showLogin("You have logged out successfully.");
+});
+
+searchInput.addEventListener("input", renderReports);
+statusFilter.addEventListener("change", renderReports);
+severityFilter.addEventListener("change", renderReports);
+
+modal.addEventListener("click", function(event) {
+    if (event.target === modal) {
+        closeModal();
+    }
+});
+
+document.addEventListener("keydown", function(event) {
+    if (event.key === "Escape") {
+        closeModal();
+    }
+});
+
+
+/* ==========================================
+   START APPLICATION
+========================================== */
+
+(async function startAdminDashboard() {
+    const isAdmin = await verifyAdminSession();
+
+    if (isAdmin) {
+        await loadReports();
+    }
+})();
+</script>
+
+</body>
+</html>
+

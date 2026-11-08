@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Contact Us - Accessible Transit</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f7fa;
+            color: #1f2937;
+        }
+
+        /* HEADER */
+        .header {
+            background: #ffffff;
+            padding: 18px 7%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1769aa;
+        }
+
+        .nav {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+        }
+
+        .nav a {
+            text-decoration: none;
+            color: #333;
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        .nav a:hover {
+            color: #1769aa;
+        }
+
+        .login-button,
+        .signup-button {
+            padding: 9px 16px;
+            border-radius: 6px;
+        }
+
+        .login-button {
+            border: 1px solid #1769aa;
+            color: #1769aa !important;
+        }
+
+        .signup-button {
+            background: #1769aa;
+            color: white !important;
+        }
+
+        /* HERO */
+        .hero {
+            background: #1769aa;
+            color: white;
+            text-align: center;
+            padding: 70px 20px;
+        }
+
+        .hero h1 {
+            font-size: 42px;
+            margin-bottom: 15px;
+        }
+
+        .hero p {
+            font-size: 18px;
+            max-width: 700px;
+            margin: auto;
+            line-height: 1.6;
+        }
+
+        /* MAIN */
+        .container {
+            width: 85%;
+            max-width: 1100px;
+            margin: 50px auto;
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        .section-title h2 {
+            font-size: 30px;
+            color: #1769aa;
+            margin-bottom: 10px;
+        }
+
+        .section-title p {
+            color: #666;
+        }
+
+        /* CONTACT CARDS */
+        .contact-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+        }
+
+        .contact-card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .contact-card h3 {
+            color: #1769aa;
+            margin-bottom: 12px;
+            font-size: 20px;
+        }
+
+        .contact-card p {
+            color: #555;
+            line-height: 1.6;
+        }
+
+        /* CTA */
+        .cta {
+            margin-top: 45px;
+            background: #eaf4fb;
+            padding: 40px 20px;
+            text-align: center;
+            border-radius: 12px;
+        }
+
+        .cta h2 {
+            color: #1769aa;
+            margin-bottom: 12px;
+        }
+
+        .cta p {
+            margin-bottom: 20px;
+            color: #555;
+        }
+
+        .report-button {
+            display: inline-block;
+            background: #1769aa;
+            color: white;
+            text-decoration: none;
+            padding: 12px 25px;
+            border-radius: 7px;
+            font-weight: bold;
+        }
+
+        .report-button:hover {
+            background: #0f4f82;
+        }
+
+        /* FOOTER */
+        .footer {
+            margin-top: 60px;
+            background: #17202a;
+            color: white;
+            text-align: center;
+            padding: 25px;
+        }
+
+        .footer p {
+            margin: 5px 0;
+            color: #d1d5db;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 800px) {
+
+            .header {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .nav {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 15px;
+            }
+
+            .hero h1 {
+                font-size: 32px;
+            }
+
+            .contact-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .container {
+                width: 92%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- HEADER -->
+    <header class="header">
+
+        <div class="logo">
+            Accessible Transit
+        </div>
+
+        <nav class="nav">
+
+            <a href="index.html">Home</a>
+
+            <a href="features.html">Features</a>
+
+            <a href="about.html">About</a>
+
+            <a href="contact.html">Contact</a>
+
+            <a href="login.html" class="login-button">
+                Login
+            </a>
+
+            <a href="signup.html" class="signup-button">
+                Sign Up
+            </a>
+
+        </nav>
+
+    </header>
+
+
+    <!-- HERO -->
+    <section class="hero">
+
+        <h1>Contact Us</h1>
+
+        <p>
+            Learn more about Accessible Transit and
+            how the platform supports accessible mobility.
+        </p>
+
+    </section>
+
+
+    <!-- MAIN CONTENT -->
+    <main class="container">
+
+        <div class="section-title">
+
+            <h2>Get in Touch</h2>
+
+            <p>
+                We are working to make public spaces safer
+                and more accessible for everyone.
+            </p>
+
+        </div>
+
+
+        <!-- CONTACT INFORMATION -->
+        <div class="contact-grid">
+
+            <div class="contact-card">
+
+                <h3>Project</h3>
+
+                <p>
+                    Accessible Transit Drop-Off Companion
+                </p>
+
+            </div>
+
+
+            <div class="contact-card">
+
+                <h3>Purpose</h3>
+
+                <p>
+                    Real-time accessibility barrier reporting
+                    for safer and more inclusive mobility.
+                </p>
+
+            </div>
+
+
+            <div class="contact-card">
+
+                <h3>Location</h3>
+
+                <p>
+                    Seshadri Rao Gudlavalleru Engineering College
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <!-- REPORT CTA -->
+        <section class="cta">
+
+            <h2>Found an Accessibility Problem?</h2>
+
+            <p>
+                Help the community by reporting a barrier
+                through our interactive map.
+            </p>
+
+            <a href="map.html" class="report-button">
+                Report a Problem
+            </a>
+
+        </section>
+
+    </main>
+
+
+    <!-- FOOTER -->
+    <footer class="footer">
+
+        <p>
+            <strong>Accessible Transit</strong>
+        </p>
+
+        <p>
+            Making Transportation Accessible for Everyone
+        </p>
+
+        <p>
+            © 2026 Accessible Transit. All Rights Reserved.
+        </p>
+
+    </footer>
+
+</body>
+
+</html>
