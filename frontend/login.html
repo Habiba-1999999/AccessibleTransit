@@ -1,340 +1,481 @@
-﻿
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
+
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
 <title>Accessible Transit Login</title>
 
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
 
-body{
-font-family:Arial;
-background:#e4f3f2;
-min-height:100vh;
-padding:20px
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
-.container{
-max-width:1050px;
-margin:30px auto;
-background:white;
-border-radius:25px;
-overflow:hidden;
-display:grid;
-grid-template-columns:1fr 1fr;
-box-shadow:0 5px 25px #0002
+body {
+    font-family: Arial, sans-serif;
+    background: #e4f3f2;
+    min-height: 100vh;
+    padding: 20px;
 }
 
-.welcome{
-background:linear-gradient(135deg,#007f72,#009b89);
-color:white;
-padding:55px 40px
+.container {
+    max-width: 1050px;
+    margin: 30px auto;
+    background: white;
+    border-radius: 25px;
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    box-shadow: 0 5px 25px #0002;
 }
 
-.welcome h1{
-font-size:38px;
-margin-bottom:30px
+.welcome {
+    background: linear-gradient(135deg, #007f72, #009b89);
+    color: white;
+    padding: 55px 40px;
 }
 
-.welcome p{
-font-size:19px;
-line-height:1.8;
-margin-bottom:35px
+.welcome h1 {
+    font-size: 38px;
+    margin-bottom: 30px;
 }
 
-.welcome li{
-list-style:none;
-font-size:17px;
-margin:20px 0
+.welcome p {
+    font-size: 19px;
+    line-height: 1.8;
+    margin-bottom: 35px;
 }
 
-.login{
-padding:55px 40px
+.welcome li {
+    list-style: none;
+    font-size: 17px;
+    margin: 20px 0;
 }
 
-.login h2{
-font-size:34px;
-margin-bottom:15px
+.check {
+    font-weight: bold;
+    margin-right: 8px;
 }
 
-.subtitle{
-color:#777;
-margin-bottom:35px
+.login {
+    padding: 55px 40px;
 }
 
-.field{
-margin-bottom:25px
+.login h2 {
+    font-size: 34px;
+    margin-bottom: 15px;
 }
 
-label{
-display:block;
-font-weight:bold;
-margin-bottom:10px
+.subtitle {
+    color: #777;
+    margin-bottom: 35px;
 }
 
-input[type=email],input[type=password]{
-width:100%;
-padding:16px;
-border:1px solid #ddd;
-border-radius:10px;
-font-size:16px
+.field {
+    margin-bottom: 25px;
 }
 
-.options{
-display:flex;
-justify-content:space-between;
-gap:10px;
-margin:25px 0
+label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 10px;
 }
 
-button{
-width:100%;
-padding:17px;
-background:#009889;
-color:white;
-border:0;
-border-radius:10px;
-font-size:18px;
-font-weight:bold;
-cursor:pointer
+input[type="email"],
+input[type="password"] {
+    width: 100%;
+    padding: 16px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    font-size: 16px;
 }
 
-button:disabled{
-opacity:.6
+.options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin: 25px 0;
 }
 
-a{
-color:#008f80;
-text-decoration:none
+.options label {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 14px;
+    margin: 0;
 }
 
-.message{
-margin-top:15px;
-padding:12px;
-border-radius:8px;
-display:none
+.options input {
+    width: 16px;
+    height: 16px;
 }
 
-.error{
-display:block;
-background:#ffe8e8;
-color:#b00020
+button {
+    width: 100%;
+    padding: 17px;
+    background: #009889;
+    color: white;
+    border: 0;
+    border-radius: 10px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
 }
 
-.success{
-display:block;
-background:#e5f8ed;
-color:#087a3d
+button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
-.signup{
-text-align:center;
-margin-top:30px
+a {
+    color: #008f80;
+    text-decoration: none;
 }
 
-.home{
-text-align:center;
-display:block;
-margin-top:25px
+a:hover {
+    text-decoration: underline;
 }
 
-@media(max-width:700px){
-.container{
-display:flex;
-flex-direction:column
+.message {
+    margin-top: 15px;
+    padding: 12px;
+    border-radius: 8px;
+    display: none;
+    overflow-wrap: anywhere;
 }
 
-.welcome,.login{
-padding:35px 25px
+.error {
+    display: block;
+    background: #ffe8e8;
+    color: #b00020;
 }
 
-.welcome h1{
-font-size:30px
+.success {
+    display: block;
+    background: #e5f8ed;
+    color: #087a3d;
 }
+
+.signup {
+    text-align: center;
+    margin-top: 30px;
 }
+
+.home {
+    text-align: center;
+    display: block;
+    margin-top: 25px;
+}
+
+@media(max-width: 700px) {
+
+    body {
+        padding: 10px;
+    }
+
+    .container {
+        display: flex;
+        flex-direction: column;
+        margin: 10px auto;
+    }
+
+    .welcome,
+    .login {
+        padding: 35px 25px;
+    }
+
+    .welcome h1 {
+        font-size: 30px;
+    }
+
+    .login h2 {
+        font-size: 28px;
+    }
+
+    .welcome p {
+        font-size: 16px;
+    }
+
+    .welcome li {
+        font-size: 15px;
+    }
+
+}
+
 </style>
+
 </head>
 
 <body>
 
 <div class="container">
 
-<section class="welcome">
+    <!-- WELCOME SECTION -->
 
-<h1>Accessible Transit</h1>
+    <section class="welcome">
 
-<p>
-Welcome back. Sign in to continue helping create safer and more accessible transportation.
-</p>
+        <h1>Accessible Transit</h1>
 
-<ul>
-<li>✓ Report accessibility barriers</li>
-<li>✓ Upload problem images</li>
-<li>✓ View community reports</li>
-<li>✓ Help improve local mobility</li>
-</ul>
+        <p>
+            Welcome back. Sign in to continue helping create safer and more accessible transportation.
+        </p>
 
-</section>
+        <ul>
 
-<section class="login">
+            <li><span class="check">&#10003;</span> Report accessibility barriers</li>
 
-<h2>Welcome Back</h2>
+            <li><span class="check">&#10003;</span> Upload problem images</li>
 
-<p class="subtitle">
-Login to your Accessible Transit account
-</p>
+            <li><span class="check">&#10003;</span> View community reports</li>
 
-<form id="loginForm">
+            <li><span class="check">&#10003;</span> Help improve local mobility</li>
 
-<div class="field">
-<label for="email">Email</label>
-<input
-type="email"
-id="email"
-placeholder="Enter your email"
-required
-autocomplete="username"
->
+        </ul>
+
+    </section>
+
+
+    <!-- LOGIN SECTION -->
+
+    <section class="login">
+
+        <h2>Welcome Back</h2>
+
+        <p class="subtitle">
+            Login to your Accessible Transit account
+        </p>
+
+
+        <form id="loginForm">
+
+            <div class="field">
+
+                <label for="email">Email</label>
+
+                <input
+                    type="email"
+                    id="email"
+                    placeholder="Enter your email"
+                    required
+                    autocomplete="username"
+                >
+
+            </div>
+
+
+            <div class="field">
+
+                <label for="password">Password</label>
+
+                <input
+                    type="password"
+                    id="password"
+                    placeholder="Enter your password"
+                    required
+                    autocomplete="current-password"
+                >
+
+            </div>
+
+
+            <div class="options">
+
+                <label>
+
+                    <input type="checkbox" id="rememberMe">
+
+                    Remember me
+
+                </label>
+
+                <a href="forgot-password.html">
+                    Forgot password?
+                </a>
+
+            </div>
+
+
+            <button type="submit" id="loginButton">
+                Login
+            </button>
+
+
+            <div
+                id="message"
+                class="message"
+                role="alert"
+                aria-live="polite">
+            </div>
+
+        </form>
+
+
+        <div class="signup">
+
+            Don't have an account?
+
+            <a href="signup.html">
+                Create Account
+            </a>
+
+        </div>
+
+
+        <a href="index.html" class="home">
+            &#8592; Back to Home
+        </a>
+
+    </section>
+
 </div>
 
-<div class="field">
-<label for="password">Password</label>
-<input
-type="password"
-id="password"
-placeholder="Enter your password"
-required
-autocomplete="current-password"
->
-</div>
-
-<div class="options">
-
-<label>
-<input type="checkbox" id="rememberMe">
-Remember me
-</label>
-
-<a href="forgot-password.html">Forgot password?</a>
-
-</div>
-
-<button type="submit" id="loginButton">
-Login
-</button>
-
-<div id="message" class="message" role="alert"></div>
-
-</form>
-
-<div class="signup">
-Don't have an account?
-<a href="signup.html">Create Account</a>
-</div>
-
-<a href="index.html" class="home">← Back to Home</a>
-
-</section>
-
-</div>
 
 <script>
 
-document.getElementById("loginForm").addEventListener("submit",async function(e){
+const API_URL = "https://accessibletransit.onrender.com/api/login";
 
-e.preventDefault();
 
-const email=document.getElementById("email").value.trim();
-const password=document.getElementById("password").value;
+document.getElementById("loginForm").addEventListener("submit", async function(e) {
 
-const button=document.getElementById("loginButton");
-const message=document.getElementById("message");
+    e.preventDefault();
 
-button.disabled=true;
-button.textContent="Logging in...";
+    const email = document.getElementById("email").value.trim();
 
-message.className="message";
+    const password = document.getElementById("password").value;
 
-try{
+    const button = document.getElementById("loginButton");
 
-const response=await fetch("/api/login",{
+    const message = document.getElementById("message");
 
-method:"POST",
+    const rememberMe = document.getElementById("rememberMe");
 
-headers:{
-"Content-Type":"application/json"
-},
 
-body:JSON.stringify({
-email,
-password
-})
+    button.disabled = true;
+
+    button.textContent = "Logging in...";
+
+    message.className = "message";
+
+    message.textContent = "";
+
+
+    try {
+
+        const response = await fetch(API_URL, {
+
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+
+            body: JSON.stringify({
+
+                email: email,
+
+                password: password
+
+            })
+
+        });
+
+
+        const data = await response.json();
+
+
+        if (!response.ok || !data.success) {
+
+            throw new Error(data.message || "Login failed. Please check your details.");
+
+        }
+
+
+        if (!data.token || !data.user) {
+
+            throw new Error("Invalid server response. Please try again.");
+
+        }
+
+
+        // SAVE LOGIN INFORMATION
+
+        localStorage.setItem("accessToken", data.token);
+
+        localStorage.setItem("user", JSON.stringify(data.user));
+
+
+        // REMEMBER EMAIL
+
+        if (rememberMe.checked) {
+
+            localStorage.setItem("rememberedEmail", email);
+
+        } else {
+
+            localStorage.removeItem("rememberedEmail");
+
+        }
+
+
+        // SUCCESS MESSAGE
+
+        message.textContent = "Login successful! Opening dashboard...";
+
+        message.className = "message success";
+
+
+        setTimeout(function() {
+
+            window.location.href = "dashboard.html";
+
+        }, 1000);
+
+
+    } catch (error) {
+
+        console.error("Login Error:", error);
+
+
+        message.textContent = error instanceof TypeError
+            ? "Unable to connect to server. Please check your internet connection."
+            : error.message;
+
+
+        message.className = "message error";
+
+
+    } finally {
+
+        button.disabled = false;
+
+        button.textContent = "Login";
+
+    }
 
 });
 
-const data=await response.json();
 
-if(!response.ok||!data.success){
-throw new Error(data.message||"Login failed");
-}
+// RESTORE REMEMBERED EMAIL
 
-if(!data.token||!data.user){
-throw new Error("Invalid server response");
-}
+const savedEmail = localStorage.getItem("rememberedEmail");
 
-localStorage.setItem("accessToken",data.token);
+if (savedEmail) {
 
-localStorage.setItem("user",JSON.stringify(data.user));
+    document.getElementById("email").value = savedEmail;
 
-if(document.getElementById("rememberMe").checked){
-
-localStorage.setItem("rememberedEmail",email);
-
-}else{
-
-localStorage.removeItem("rememberedEmail");
-
-}
-
-message.textContent="Login successful! Opening dashboard...";
-
-message.className="message success";
-
-setTimeout(()=>{
-window.location.href="dashboard.html";
-},1000);
-
-}catch(error){
-
-message.textContent=
-error instanceof TypeError
-?"Unable to connect to server. Check your backend URL."
-:error.message;
-
-message.className="message error";
-
-}finally{
-
-button.disabled=false;
-button.textContent="Login";
-
-}
-
-});
-
-const saved=localStorage.getItem("rememberedEmail");
-
-if(saved){
-
-document.getElementById("email").value=saved;
-
-document.getElementById("rememberMe").checked=true;
+    document.getElementById("rememberMe").checked = true;
 
 }
 
 </script>
 
 </body>
+
 </html>

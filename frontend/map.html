@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -40,7 +40,8 @@
             height: 360px;
             width: 100%;
             border-radius: 12px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
+            z-index: 1;
         }
 
         .card {
@@ -79,15 +80,25 @@
             cursor: not-allowed;
         }
 
+        #refreshReportsButton {
+            background: #15803d;
+        }
+
         #stopNavigationButton {
             background: #b91c1c;
         }
 
         #navigationStatus,
-        #statusMessage {
+        #statusMessage,
+        #reportsStatus {
             white-space: pre-wrap;
             overflow-wrap: anywhere;
             line-height: 1.5;
+        }
+
+        #reportsStatus {
+            font-size: 14px;
+            color: #444;
         }
 
         .notice {
@@ -110,6 +121,45 @@
         #cameraArea {
             display: none;
         }
+
+        .report-marker {
+            width: 18px;
+            height: 18px;
+            border: 3px solid white;
+            border-radius: 50%;
+            box-shadow: 0 1px 5px #0008;
+        }
+
+        .report-popup {
+            line-height: 1.6;
+            min-width: 180px;
+            overflow-wrap: anywhere;
+        }
+
+        .report-popup strong {
+            color: #075985;
+        }
+
+        .map-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin: 10px 0;
+            font-size: 13px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            display: inline-block;
+            border-radius: 50%;
+        }
     </style>
 </head>
 
@@ -123,12 +173,14 @@
 <main>
 
     <!-- LOCATION AND MAP -->
+
     <section class="card">
 
         <h3>Your Location</h3>
 
         <p>
             Select your location on the map or use your current location.
+            Previously submitted barrier reports will also appear on the map.
         </p>
 
         <button type="button" id="locateButton">
@@ -136,6 +188,31 @@
         </button>
 
         <div id="map"></div>
+
+        <button type="button" id="refreshReportsButton">
+            Refresh Reported Barriers
+        </button>
+
+        <p id="reportsStatus" role="status">
+            Loading previously submitted reports...
+        </p>
+
+        <div class="map-legend">
+            <span class="legend-item">
+                <span class="legend-dot" style="background:#dc2626"></span>
+                High
+            </span>
+
+            <span class="legend-item">
+                <span class="legend-dot" style="background:#f97316"></span>
+                Medium
+            </span>
+
+            <span class="legend-item">
+                <span class="legend-dot" style="background:#eab308"></span>
+                Low
+            </span>
+        </div>
 
         <label for="latitude">Latitude</label>
         <input id="latitude" readonly>
@@ -147,6 +224,7 @@
 
 
     <!-- ROUTE NAVIGATION -->
+
     <section class="card">
 
         <h3>Accessible Route Navigation</h3>
@@ -178,15 +256,17 @@
         </p>
 
         <p class="notice">
-            Important: Routes currently use standard driving directions.
-            Wheelchair accessibility is not guaranteed. Always check the
-            route and surroundings before travelling.
+            Important: Routes use pedestrian directions where available
+            and consider reported barriers. Wheelchair accessibility
+            is not guaranteed. Always check the route and surroundings
+            before travelling.
         </p>
 
     </section>
 
 
     <!-- BARRIER REPORTING -->
+
     <section class="card">
 
         <h3>Report a Barrier</h3>
@@ -204,7 +284,6 @@
                 <option value="Other">Other</option>
             </select>
 
-
             <label for="severity">Severity</label>
 
             <select id="severity" required>
@@ -212,7 +291,6 @@
                 <option value="Medium">Medium - Difficult to pass</option>
                 <option value="Low">Low - Minor obstacle</option>
             </select>
-
 
             <label for="description">Description</label>
 
@@ -222,7 +300,6 @@
                 placeholder="Describe the accessibility barrier"
                 required
             ></textarea>
-
 
             <h3>Take a Live Camera Photo</h3>
 
@@ -280,44 +357,23 @@
 <script>
 (() => {
 
+    "use strict";
+
     // =====================================================
     // CONFIGURATION
     // =====================================================
 
-    const API_BASE =
-        "https://para-payment-joke-main.trycloudflare.com";
+    const API_BASE = "https://accessibletransit.onrender.com";
 
     const DEFAULT_LOCATION = [16.5062, 80.6480];
 
     const GEOCODING_URL =
         "https://nominatim.openstreetmap.org/search";
 
-    const ROUTING_URL =
-        "https://router.project-osrm.org/route/v1/driving/";
+    const DEFAULT_ROUTE_URL =
+        "https://valhalla1.openstreetmap.de/route";
 
-
-    // =====================================================
-    // MAP INITIALIZATION
-    // =====================================================
-
-    const map = L.map("map").setView(DEFAULT_LOCATION, 13);
-
-    L.tileLayer(
-        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-        {
-            attribution: "&copy; OpenStreetMap contributors"
-        }
-    ).addTo(map);
-
-
-    // =====================================================
-    // REPORTING VARIABLES
-    // =====================================================
-
-    let marker = null;
-    let cameraStream = null;
-    let capturedPhoto = null;
-    let previewObjectUrl = null;
+    const REPORT_BARRIER_DISTANCE = 25;
 
 
     // =====================================================
@@ -329,6 +385,15 @@
 
     const longitudeInput =
         document.getElementById("longitude");
+
+    const statusMessage =
+        document.getElementById("statusMessage");
+
+    const reportsStatus =
+        document.getElementById("reportsStatus");
+
+    const refreshReportsButton =
+        document.getElementById("refreshReportsButton");
 
     const video =
         document.getElementById("cameraVideo");
@@ -342,9 +407,6 @@
     const photoStatus =
         document.getElementById("photoStatus");
 
-    const statusMessage =
-        document.getElementById("statusMessage");
-
     const openCameraButton =
         document.getElementById("openCameraButton");
 
@@ -354,6 +416,310 @@
     const submitButton =
         document.getElementById("submitButton");
 
+    const navigationStatus =
+        document.getElementById("navigationStatus");
+
+    const destinationInput =
+        document.getElementById("destinationInput");
+
+    const searchDestinationButton =
+        document.getElementById("searchDestinationButton");
+
+    const startNavigationButton =
+        document.getElementById("startNavigationButton");
+
+    const stopNavigationButton =
+        document.getElementById("stopNavigationButton");
+
+
+    // =====================================================
+    // MAP INITIALIZATION
+    // =====================================================
+
+    const map = L.map("map").setView(
+        DEFAULT_LOCATION,
+        13
+    );
+
+    L.tileLayer(
+        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        {
+            attribution: "&copy; OpenStreetMap contributors",
+            maxZoom: 19
+        }
+    ).addTo(map);
+
+
+    // Separate layers keep report markers independent
+    // from location and navigation markers.
+
+    const reportsLayer = L.layerGroup().addTo(map);
+
+    let marker = null;
+
+
+    // =====================================================
+    // REPORT MARKERS
+    // =====================================================
+
+    let loadedReports = [];
+
+    function escapeHTML(value) {
+
+        return String(value ?? "").replace(
+            /[&<>"']/g,
+            character => ({
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                '"': "&quot;",
+                "'": "&#39;"
+            })[character]
+        );
+
+    }
+
+
+    function getReportCoordinates(report) {
+
+        const lat = Number(
+            report.latitude ??
+            report.lat ??
+            report.location?.latitude
+        );
+
+        const lng = Number(
+            report.longitude ??
+            report.lng ??
+            report.lon ??
+            report.location?.longitude
+        );
+
+        if (
+            !Number.isFinite(lat) ||
+            !Number.isFinite(lng) ||
+            lat < -90 ||
+            lat > 90 ||
+            lng < -180 ||
+            lng > 180
+        ) {
+            return null;
+        }
+
+        return { lat, lng };
+
+    }
+
+
+    function getSeverityColor(severity) {
+
+        switch (String(severity || "").toLowerCase()) {
+
+            case "high":
+                return "#dc2626";
+
+            case "medium":
+                return "#f97316";
+
+            case "low":
+                return "#eab308";
+
+            default:
+                return "#64748b";
+
+        }
+
+    }
+
+
+    function addReportMarker(report) {
+
+        const coordinates = getReportCoordinates(report);
+
+        if (!coordinates) {
+
+            console.warn(
+                "Report has invalid coordinates:",
+                report
+            );
+
+            return false;
+
+        }
+
+        const color = getSeverityColor(report.severity);
+
+        const icon = L.divIcon({
+
+            className: "",
+
+            html:
+                `<div class="report-marker"
+                    style="background:${color}">
+                </div>`,
+
+            iconSize: [18, 18],
+
+            iconAnchor: [9, 9]
+
+        });
+
+        const reportMarker = L.marker(
+            [coordinates.lat, coordinates.lng],
+            { icon }
+        );
+
+        const type = escapeHTML(
+            report.type || "Unknown barrier"
+        );
+
+        const severity = escapeHTML(
+            report.severity || "Unknown"
+        );
+
+        const description = escapeHTML(
+            report.description || "No description provided."
+        );
+
+        const status = escapeHTML(
+            report.status || "Reported"
+        );
+
+        reportMarker.bindPopup(`
+            <div class="report-popup">
+                <strong>${type}</strong><br>
+                <b>Severity:</b> ${severity}<br>
+                <b>Status:</b> ${status}<br>
+                <b>Description:</b> ${description}<br>
+                <b>Latitude:</b> ${coordinates.lat.toFixed(6)}<br>
+                <b>Longitude:</b> ${coordinates.lng.toFixed(6)}
+            </div>
+        `);
+
+        reportMarker.addTo(reportsLayer);
+
+        return true;
+
+    }
+
+
+    // =====================================================
+    // LOAD EXISTING REPORTS FROM BACKEND
+    // =====================================================
+
+    async function loadExistingReports() {
+
+        refreshReportsButton.disabled = true;
+
+        reportsStatus.textContent =
+            "Loading previously submitted reports...";
+
+        try {
+
+            const response = await fetch(
+                API_BASE + "/api/reports",
+                {
+                    method: "GET",
+                    headers: {
+                        "Accept": "application/json"
+                    }
+                }
+            );
+
+            if (!response.ok) {
+
+                throw new Error(
+                    "Reports API returned HTTP " +
+                    response.status
+                );
+
+            }
+
+            const data = await response.json();
+
+            // Supports common API response structures.
+
+            const reports = Array.isArray(data)
+                ? data
+                : Array.isArray(data.reports)
+                    ? data.reports
+                    : Array.isArray(data.data)
+                        ? data.data
+                        : null;
+
+            if (!reports) {
+
+                throw new Error(
+                    "The backend did not return a valid reports array."
+                );
+
+            }
+
+            loadedReports = reports;
+
+            reportsLayer.clearLayers();
+
+            let displayedCount = 0;
+
+            reports.forEach(report => {
+
+                const reportStatus =
+                    String(report.status || "").toLowerCase();
+
+                // Do not display resolved reports as active barriers.
+                if (
+                    reportStatus === "resolved" ||
+                    reportStatus === "completed"
+                ) {
+                    return;
+                }
+
+                if (addReportMarker(report)) {
+                    displayedCount++;
+                }
+
+            });
+
+            reportsStatus.textContent =
+                displayedCount +
+                " active barrier report(s) displayed on the map.";
+
+            console.log(
+                "Previously submitted reports:",
+                loadedReports
+            );
+
+        } catch (error) {
+
+            console.error(
+                "Unable to load barrier reports:",
+                error
+            );
+
+            reportsStatus.textContent =
+                "Unable to load previous reports: " +
+                error.message +
+                ". Please check your backend API.";
+
+        } finally {
+
+            refreshReportsButton.disabled = false;
+
+        }
+
+    }
+
+
+    refreshReportsButton.addEventListener(
+        "click",
+        loadExistingReports
+    );
+
+
+    // Load reports automatically when the map opens.
+
+    loadExistingReports();
+
 
     // =====================================================
     // REPORT LOCATION SELECTION
@@ -362,6 +728,7 @@
     function setLocation(lat, lng) {
 
         latitudeInput.value = lat.toFixed(6);
+
         longitudeInput.value = lng.toFixed(6);
 
         if (marker) {
@@ -370,9 +737,10 @@
 
         } else {
 
-            marker = L.marker([lat, lng], {
-                draggable: true
-            }).addTo(map);
+            marker = L.marker(
+                [lat, lng],
+                { draggable: true }
+            ).addTo(map);
 
         }
 
@@ -395,6 +763,7 @@
         });
 
         map.setView([lat, lng], 16);
+
     }
 
 
@@ -418,6 +787,7 @@
                     "Location is not supported by this browser.";
 
                 return;
+
             }
 
             statusMessage.textContent =
@@ -479,22 +849,6 @@
     let navigationActive = false;
 
 
-    const navigationStatus =
-        document.getElementById("navigationStatus");
-
-    const destinationInput =
-        document.getElementById("destinationInput");
-
-    const searchDestinationButton =
-        document.getElementById("searchDestinationButton");
-
-    const startNavigationButton =
-        document.getElementById("startNavigationButton");
-
-    const stopNavigationButton =
-        document.getElementById("stopNavigationButton");
-
-
     // =====================================================
     // DISTANCE CALCULATION
     // =====================================================
@@ -506,11 +860,9 @@
         const toRadians = value =>
             value * Math.PI / 180;
 
-        const dLat =
-            toRadians(lat2 - lat1);
+        const dLat = toRadians(lat2 - lat1);
 
-        const dLon =
-            toRadians(lon2 - lon1);
+        const dLon = toRadians(lon2 - lon1);
 
         const a =
             Math.sin(dLat / 2) ** 2 +
@@ -524,6 +876,7 @@
                 Math.sqrt(a),
                 Math.sqrt(1 - a)
             );
+
     }
 
 
@@ -542,6 +895,7 @@
                 "Please enter a destination.";
 
             return;
+
         }
 
         searchDestinationButton.disabled = true;
@@ -582,8 +936,10 @@
 
             const lng = Number(result.lon);
 
-            if (!Number.isFinite(lat) ||
-                !Number.isFinite(lng)) {
+            if (
+                !Number.isFinite(lat) ||
+                !Number.isFinite(lng)
+            ) {
 
                 throw new Error(
                     "Invalid destination coordinates."
@@ -592,8 +948,8 @@
             }
 
             navigationDestination = {
-                lat: lat,
-                lng: lng
+                lat,
+                lng
             };
 
             if (navigationDestinationMarker) {
@@ -607,7 +963,9 @@
             navigationDestinationMarker =
                 L.marker([lat, lng])
                     .addTo(map)
-                    .bindPopup("Destination: " + result.display_name)
+                    .bindPopup(
+                        "Destination: " + escapeHTML(result.display_name)
+                    )
                     .openPopup();
 
             map.setView([lat, lng], 15);
@@ -676,15 +1034,155 @@
 
 
     // =====================================================
+    // DECODE VALHALLA POLYLINE6
+    // =====================================================
+
+    function decodePolyline(encoded) {
+
+        let index = 0;
+
+        let lat = 0;
+
+        let lng = 0;
+
+        const points = [];
+
+        while (index < encoded.length) {
+
+            let result = 0;
+
+            let shift = 0;
+
+            let byte;
+
+            do {
+
+                byte = encoded.charCodeAt(index++) - 63;
+
+                result |= (byte & 0x1f) << shift;
+
+                shift += 5;
+
+            } while (byte >= 0x20);
+
+            const deltaLat =
+                (result & 1)
+                    ? ~(result >> 1)
+                    : (result >> 1);
+
+            lat += deltaLat;
+
+            result = 0;
+
+            shift = 0;
+
+            do {
+
+                byte = encoded.charCodeAt(index++) - 63;
+
+                result |= (byte & 0x1f) << shift;
+
+                shift += 5;
+
+            } while (byte >= 0x20);
+
+            const deltaLng =
+                (result & 1)
+                    ? ~(result >> 1)
+                    : (result >> 1);
+
+            lng += deltaLng;
+
+            points.push({
+
+                lat: lat / 1000000,
+
+                lng: lng / 1000000
+
+            });
+
+        }
+
+        return points;
+
+    }
+
+
+    // =====================================================
+    // DISTANCE FROM BARRIER TO ROUTE SEGMENT
+    // =====================================================
+
+    function distanceToSegment(point, start, end) {
+
+        const earthRadius = 6371000;
+
+        const referenceLat =
+            point.lat * Math.PI / 180;
+
+        const scaleX =
+            earthRadius *
+            Math.cos(referenceLat) *
+            Math.PI / 180;
+
+        const scaleY =
+            earthRadius * Math.PI / 180;
+
+        const px = point.lng * scaleX;
+
+        const py = point.lat * scaleY;
+
+        const ax = start.lng * scaleX;
+
+        const ay = start.lat * scaleY;
+
+        const bx = end.lng * scaleX;
+
+        const by = end.lat * scaleY;
+
+        const dx = bx - ax;
+
+        const dy = by - ay;
+
+        const lengthSquared = dx * dx + dy * dy;
+
+        let t = 0;
+
+        if (lengthSquared > 0) {
+
+            t = (
+                (px - ax) * dx +
+                (py - ay) * dy
+            ) / lengthSquared;
+
+        }
+
+        t = Math.max(0, Math.min(1, t));
+
+        const nearestX = ax + t * dx;
+
+        const nearestY = ay + t * dy;
+
+        return Math.sqrt(
+            (px - nearestX) ** 2 +
+            (py - nearestY) ** 2
+        );
+
+    }
+
+
+    // =====================================================
     // CALCULATE AND DISPLAY ROUTE
     // =====================================================
 
     async function calculateRoute(startLat, startLng) {
 
         if (!navigationDestination) {
+
             navigationStatus.textContent =
                 "Search for a destination first.";
+
             return;
+
         }
 
         if (routeRequestInProgress) return;
@@ -698,8 +1196,8 @@
 
             const destination = navigationDestination;
 
-            // Request pedestrian routes from Valhalla.
             const request = {
+
                 locations: [
                     {
                         lat: startLat,
@@ -712,87 +1210,52 @@
                         type: "break"
                     }
                 ],
+
                 costing: "pedestrian",
+
                 units: "kilometers",
+
                 shape_format: "polyline6",
+
                 alternates: 2
+
             };
 
             const routingUrl =
-                "https://valhalla1.openstreetmap.de/route?json=" +
+                DEFAULT_ROUTE_URL +
+                "?json=" +
                 encodeURIComponent(JSON.stringify(request));
 
             const routeResponse = await fetch(routingUrl);
 
             if (!routeResponse.ok) {
+
                 throw new Error(
                     "Pedestrian routing service returned HTTP " +
                     routeResponse.status
                 );
+
             }
 
             const routeData = await routeResponse.json();
 
             if (routeData.error || !routeData.trip) {
+
                 throw new Error(
-                    routeData.error || "No pedestrian route was found."
+                    routeData.error ||
+                    "No pedestrian route was found."
                 );
+
             }
 
-            // Decode Valhalla polyline6.
-            function decodePolyline(encoded) {
-
-                let index = 0;
-                let lat = 0;
-                let lng = 0;
-                const points = [];
-
-                while (index < encoded.length) {
-
-                    let result = 0;
-                    let shift = 0;
-                    let byte;
-
-                    do {
-                        byte = encoded.charCodeAt(index++) - 63;
-                        result |= (byte & 0x1f) << shift;
-                        shift += 5;
-                    } while (byte >= 0x20);
-
-                    const deltaLat =
-                        (result & 1) ? ~(result >> 1) : (result >> 1);
-
-                    lat += deltaLat;
-
-                    result = 0;
-                    shift = 0;
-
-                    do {
-                        byte = encoded.charCodeAt(index++) - 63;
-                        result |= (byte & 0x1f) << shift;
-                        shift += 5;
-                    } while (byte >= 0x20);
-
-                    const deltaLng =
-                        (result & 1) ? ~(result >> 1) : (result >> 1);
-
-                    lng += deltaLng;
-
-                    points.push({
-                        lat: lat / 1000000,
-                        lng: lng / 1000000
-                    });
-                }
-
-                return points;
-            }
-
-            // Collect the main route and alternative routes.
             const trips = [
+
                 routeData.trip,
+
                 ...(routeData.alternates || []).map(item =>
                     item.trip || item
                 )
+
             ];
 
             const routes = trips.map((trip, index) => {
@@ -802,33 +1265,54 @@
                 (trip.legs || []).forEach(leg => {
 
                     if (leg.shape) {
+
                         points.push(
                             ...decodePolyline(leg.shape)
                         );
+
                     }
 
                 });
 
                 return {
-                    trip: trip,
-                    points: points,
-                    distance: Number(trip.summary?.length || 0),
-                    duration: Number(trip.summary?.time || 0),
+
+                    trip,
+
+                    points,
+
+                    distance: Number(
+                        trip.summary?.length || 0
+                    ),
+
+                    duration: Number(
+                        trip.summary?.time || 0
+                    ),
+
                     barrierCount: 0,
+
                     barriers: [],
+
                     routeNumber: index + 1
+
                 };
 
-            }).filter(route => route.points.length >= 2);
+            }).filter(route =>
+                route.points.length >= 2
+            );
 
             if (!routes.length) {
+
                 throw new Error(
                     "The routing service returned no usable route geometry."
                 );
+
             }
 
-            // Fetch active barrier reports.
+
+            // Load active reports for route checking.
+
             let barriers = [];
+
             let barrierCheckAvailable = true;
 
             try {
@@ -838,26 +1322,43 @@
                 );
 
                 if (!barrierResponse.ok) {
-                    throw new Error("Barrier API unavailable.");
+
+                    throw new Error(
+                        "Barrier API unavailable."
+                    );
+
                 }
 
-                const barrierData = await barrierResponse.json();
+                const barrierData =
+                    await barrierResponse.json();
 
-                if (!barrierData.success ||
-                    !Array.isArray(barrierData.reports)) {
-                    throw new Error("Invalid barrier API response.");
+                const reports = Array.isArray(barrierData)
+                    ? barrierData
+                    : Array.isArray(barrierData.reports)
+                        ? barrierData.reports
+                        : Array.isArray(barrierData.data)
+                            ? barrierData.data
+                            : null;
+
+                if (!reports) {
+
+                    throw new Error(
+                        "Invalid barrier API response."
+                    );
+
                 }
 
-                barriers = barrierData.reports.filter(report => {
+                barriers = reports.filter(report => {
 
-                    const lat = Number(report.latitude);
-                    const lng = Number(report.longitude);
+                    const coordinates =
+                        getReportCoordinates(report);
 
-                    return Number.isFinite(lat) &&
-                        Number.isFinite(lng) &&
-                        lat >= -90 && lat <= 90 &&
-                        lng >= -180 && lng <= 180 &&
-                        report.status !== "Resolved";
+                    const status =
+                        String(report.status || "").toLowerCase();
+
+                    return coordinates &&
+                        status !== "resolved" &&
+                        status !== "completed";
 
                 });
 
@@ -872,65 +1373,17 @@
 
             }
 
-            // Calculate distance from a barrier to a route segment.
-            function distanceToSegment(point, start, end) {
 
-                const earthRadius = 6371000;
-                const referenceLat =
-                    point.lat * Math.PI / 180;
+            // Check each route against reported barriers.
 
-                const scaleX =
-                    earthRadius * Math.cos(referenceLat) *
-                    Math.PI / 180;
-
-                const scaleY =
-                    earthRadius * Math.PI / 180;
-
-                const px = point.lng * scaleX;
-                const py = point.lat * scaleY;
-
-                const ax = start.lng * scaleX;
-                const ay = start.lat * scaleY;
-
-                const bx = end.lng * scaleX;
-                const by = end.lat * scaleY;
-
-                const dx = bx - ax;
-                const dy = by - ay;
-
-                const lengthSquared = dx * dx + dy * dy;
-
-                let t = 0;
-
-                if (lengthSquared > 0) {
-                    t = (
-                        (px - ax) * dx +
-                        (py - ay) * dy
-                    ) / lengthSquared;
-                }
-
-                t = Math.max(0, Math.min(1, t));
-
-                const nearestX = ax + t * dx;
-                const nearestY = ay + t * dy;
-
-                return Math.sqrt(
-                    Math.pow(px - nearestX, 2) +
-                    Math.pow(py - nearestY, 2)
-                );
-            }
-
-            // Count reported barriers within 25 metres of each route.
             routes.forEach(route => {
 
                 if (!barrierCheckAvailable) return;
 
                 barriers.forEach(barrier => {
 
-                    const barrierPoint = {
-                        lat: Number(barrier.latitude),
-                        lng: Number(barrier.longitude)
-                    };
+                    const barrierPoint =
+                        getReportCoordinates(barrier);
 
                     let minimumDistance = Infinity;
 
@@ -940,11 +1393,12 @@
                         i++
                     ) {
 
-                        const distance = distanceToSegment(
-                            barrierPoint,
-                            route.points[i],
-                            route.points[i + 1]
-                        );
+                        const distance =
+                            distanceToSegment(
+                                barrierPoint,
+                                route.points[i],
+                                route.points[i + 1]
+                            );
 
                         minimumDistance = Math.min(
                             minimumDistance,
@@ -953,37 +1407,49 @@
 
                     }
 
-                    if (minimumDistance <= 25) {
+                    if (
+                        minimumDistance <= REPORT_BARRIER_DISTANCE
+                    ) {
+
                         route.barriers.push(barrier);
+
                     }
 
                 });
 
-                route.barrierCount = route.barriers.length;
+                route.barrierCount =
+                    route.barriers.length;
 
             });
 
-            // Prefer fewer reported barriers, then shorter distance.
+
+            // Prefer fewer reported barriers, then shorter route.
+
             routes.sort((a, b) => {
 
-                if (barrierCheckAvailable &&
-                    a.barrierCount !== b.barrierCount) {
+                if (
+                    barrierCheckAvailable &&
+                    a.barrierCount !== b.barrierCount
+                ) {
+
                     return a.barrierCount - b.barrierCount;
+
                 }
 
                 return a.distance - b.distance;
 
             });
 
+
             const bestRoute = routes[0];
 
-            // Draw the recommended pedestrian route.
             clearNavigationRoute();
 
-            const coordinates = bestRoute.points.map(point => [
-                point.lat,
-                point.lng
-            ]);
+            const coordinates =
+                bestRoute.points.map(point => [
+                    point.lat,
+                    point.lng
+                ]);
 
             navigationRouteLine = L.polyline(
                 coordinates,
@@ -1001,8 +1467,11 @@
 
             map.fitBounds(
                 navigationRouteLine.getBounds(),
-                { padding: [35, 35] }
+                {
+                    padding: [35, 35]
+                }
             );
+
 
             const distanceText =
                 bestRoute.distance > 0
@@ -1011,20 +1480,25 @@
 
             const durationText =
                 bestRoute.duration > 0
-                    ? Math.round(bestRoute.duration / 60) + " minutes"
+                    ? Math.round(
+                        bestRoute.duration / 60
+                    ) + " minutes"
                     : "Time unavailable";
+
 
             let status =
                 "Recommended pedestrian route found.\n" +
                 "Distance: " + distanceText + "\n" +
                 "Estimated walking time: " + durationText + "\n";
 
+
             if (barrierCheckAvailable) {
 
                 status +=
                     "Reported barriers nearby: " +
                     bestRoute.barrierCount + "\n" +
-                    "Routes compared: " + routes.length;
+                    "Routes compared: " +
+                    routes.length;
 
             } else {
 
@@ -1043,10 +1517,14 @@
 
         } catch (error) {
 
-            console.error("Pedestrian routing error:", error);
+            console.error(
+                "Pedestrian routing error:",
+                error
+            );
 
             navigationStatus.textContent =
-                "Route calculation failed: " + error.message;
+                "Route calculation failed: " +
+                error.message;
 
         } finally {
 
@@ -1055,6 +1533,11 @@
         }
 
     }
+
+
+    // =====================================================
+    // UPDATE LIVE NAVIGATION LOCATION
+    // =====================================================
 
     function updateNavigationLocation(position) {
 
@@ -1065,8 +1548,8 @@
             position.coords.longitude;
 
         navigationCurrentLocation = {
-            lat: lat,
-            lng: lng
+            lat,
+            lng
         };
 
         if (navigationCurrentMarker) {
@@ -1090,13 +1573,19 @@
                     }
                 )
                 .addTo(map)
-                .bindPopup("Your current navigation location");
+                .bindPopup(
+                    "Your current navigation location"
+                );
 
         }
 
-        // Refresh the route only after moving at least 100 metres.
-        if (navigationDestination &&
-            !routeRequestInProgress) {
+
+        // Recalculate after moving at least 100 metres.
+
+        if (
+            navigationDestination &&
+            !routeRequestInProgress
+        ) {
 
             let shouldRecalculate = false;
 
@@ -1309,6 +1798,13 @@
     // CAMERA
     // =====================================================
 
+    let cameraStream = null;
+
+    let capturedPhoto = null;
+
+    let previewObjectUrl = null;
+
+
     async function closeCamera() {
 
         if (cameraStream) {
@@ -1336,8 +1832,10 @@
 
             statusMessage.textContent = "";
 
-            if (!navigator.mediaDevices ||
-                !navigator.mediaDevices.getUserMedia) {
+            if (
+                !navigator.mediaDevices ||
+                !navigator.mediaDevices.getUserMedia
+            ) {
 
                 statusMessage.textContent =
                     "Camera is unavailable. Open this page in your Android app " +
@@ -1392,8 +1890,10 @@
         "click",
         () => {
 
-            if (!cameraStream ||
-                !video.videoWidth) {
+            if (
+                !cameraStream ||
+                !video.videoWidth
+            ) {
 
                 statusMessage.textContent =
                     "Camera is not ready. Please wait and try again.";
@@ -1470,7 +1970,10 @@
 
     document
         .getElementById("closeCameraButton")
-        .addEventListener("click", closeCamera);
+        .addEventListener(
+            "click",
+            closeCamera
+        );
 
 
     // =====================================================
@@ -1487,8 +1990,10 @@
 
                 statusMessage.textContent = "";
 
-                if (!latitudeInput.value ||
-                    !longitudeInput.value) {
+                if (
+                    !latitudeInput.value ||
+                    !longitudeInput.value
+                ) {
 
                     statusMessage.textContent =
                         "Please select the barrier location on the map first.";
@@ -1562,7 +2067,7 @@
                         API_BASE + "/api/reports",
                         {
                             method: "POST",
-                            headers: headers,
+                            headers,
                             body: formData
                         }
                     );
@@ -1583,6 +2088,10 @@
 
                     statusMessage.textContent =
                         "Barrier report submitted successfully.";
+
+                    // Refresh map markers after saving.
+
+                    await loadExistingReports();
 
                     document
                         .getElementById("reportForm")
@@ -1620,6 +2129,11 @@
                     }
 
                 } catch (error) {
+
+                    console.error(
+                        "Report submission error:",
+                        error
+                    );
 
                     statusMessage.textContent =
                         "Report submission failed: " +

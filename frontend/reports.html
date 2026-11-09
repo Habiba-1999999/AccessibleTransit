@@ -1,327 +1,298 @@
-<!DOCTYPE html>
-
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <title>Community Reports | Accessible Transit</title>
 
-<title>Community Reports | Accessible Transit</title>
-
-<style>
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        font-family: Arial, sans-serif;
-    }
-
-    body {
-        background: #f5f9fc;
-        color: #1f2937;
-    }
-
-    header {
-        min-height: 72px;
-        background: white;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 15px 7%;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-    }
-
-    .logo {
-        font-size: 23px;
-        font-weight: bold;
-        color: #1261a0;
-    }
-
-    nav {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
-
-    nav a {
-        text-decoration: none;
-        padding: 10px 15px;
-        border-radius: 8px;
-        font-weight: 500;
-    }
-
-    .home-btn {
-        color: #344054;
-    }
-
-    .report-btn {
-        background: #e8f3fb;
-        color: #1261a0;
-        font-weight: bold;
-    }
-
-    .dashboard-btn {
-        background: #1261a0;
-        color: white;
-        font-weight: bold;
-    }
-
-    .page-header {
-        text-align: center;
-        padding: 55px 20px 30px;
-    }
-
-    .page-header h1 {
-        color: #12344d;
-        font-size: 36px;
-        margin-bottom: 12px;
-    }
-
-    .page-header p {
-        color: #667085;
-        line-height: 1.6;
-    }
-
-    #loading {
-        text-align: center;
-        color: #667085;
-        padding: 30px;
-    }
-
-    #error {
-        display: none;
-        max-width: 700px;
-        margin: 20px auto;
-        padding: 15px;
-        background: #ffe5e5;
-        color: #b42318;
-        border-radius: 8px;
-        text-align: center;
-    }
-
-    .reports-container {
-        width: 84%;
-        max-width: 1100px;
-        margin: 20px auto 70px;
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 25px;
-    }
-
-    .report-card {
-        background: white;
-        border-radius: 15px;
-        overflow: hidden;
-        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
-    }
-
-    .report-image {
-        width: 100%;
-        height: 200px;
-        background: #eaf6ff;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #667085;
-    }
-
-    .report-image img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-
-    .report-content {
-        padding: 22px;
-    }
-
-    .report-type {
-        color: #12344d;
-        font-size: 20px;
-        font-weight: bold;
-        margin-bottom: 12px;
-    }
-
-    .severity {
-        display: inline-block;
-        padding: 6px 10px;
-        border-radius: 20px;
-        font-size: 12px;
-        font-weight: bold;
-        margin-bottom: 15px;
-    }
-
-    .high {
-        background: #ffe0e0;
-        color: #b42318;
-    }
-
-    .medium {
-        background: #fff0d6;
-        color: #a15c00;
-    }
-
-    .low {
-        background: #dcfce7;
-        color: #16703a;
-    }
-
-    .description {
-        color: #667085;
-        line-height: 1.6;
-        margin-bottom: 15px;
-    }
-
-    .reporter {
-        background: #f5f9fc;
-        border-radius: 8px;
-        padding: 10px;
-        margin-bottom: 15px;
-        font-size: 13px;
-        color: #52606d;
-        line-height: 1.7;
-    }
-
-    .reporter strong {
-        color: #12344d;
-    }
-
-    .location {
-        color: #52606d;
-        font-size: 13px;
-        line-height: 1.6;
-        margin-bottom: 8px;
-    }
-
-    .date {
-        color: #98a2b3;
-        font-size: 12px;
-    }
-
-    .no-reports {
-        grid-column: 1 / -1;
-        text-align: center;
-        background: white;
-        padding: 50px;
-        border-radius: 15px;
-        color: #667085;
-    }
-
-    .no-reports h2 {
-        color: #12344d;
-        margin-bottom: 10px;
-    }
-
-    .no-reports a {
-        display: inline-block;
-        margin-top: 20px;
-        text-decoration: none;
-        padding: 12px 20px;
-        border-radius: 8px;
-        background: #1261a0;
-        color: white;
-    }
-
-    footer {
-        background: #0c2638;
-        color: #d5e1e9;
-        text-align: center;
-        padding: 25px;
-        font-size: 14px;
-    }
-
-    @media (max-width: 900px) {
-        .reports-container {
-            grid-template-columns: repeat(2, 1fr);
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
         }
-    }
 
-    @media (max-width: 600px) {
+        body {
+            background: #f5f9fc;
+            color: #1f2937;
+        }
+
         header {
-            flex-direction: column;
-            gap: 15px;
+            min-height: 72px;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px 7%;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+
+        .logo {
+            font-size: 23px;
+            font-weight: bold;
+            color: #1261a0;
         }
 
         nav {
-            flex-wrap: wrap;
-            justify-content: center;
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
 
-        .reports-container {
-            grid-template-columns: 1fr;
-            width: 90%;
+        nav a {
+            text-decoration: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+
+        .home-btn {
+            color: #344054;
+        }
+
+        .report-btn {
+            background: #e8f3fb;
+            color: #1261a0;
+            font-weight: bold;
+        }
+
+        .dashboard-btn {
+            background: #1261a0;
+            color: white;
+            font-weight: bold;
+        }
+
+        .page-header {
+            text-align: center;
+            padding: 55px 20px 30px;
         }
 
         .page-header h1 {
-            font-size: 30px;
+            color: #12344d;
+            font-size: 36px;
+            margin-bottom: 12px;
         }
-    }
-</style>
 
+        .page-header p {
+            color: #667085;
+            line-height: 1.6;
+        }
 
+        #loading {
+            text-align: center;
+            color: #667085;
+            padding: 30px;
+        }
+
+        #error {
+            display: none;
+            max-width: 700px;
+            margin: 20px auto;
+            padding: 15px;
+            background: #ffe5e5;
+            color: #b42318;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .reports-container {
+            width: 84%;
+            max-width: 1100px;
+            margin: 20px auto 70px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+        }
+
+        .report-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .report-image {
+            width: 100%;
+            height: 200px;
+            background: #eaf6ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #667085;
+        }
+
+        .report-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .report-content {
+            padding: 22px;
+        }
+
+        .report-type {
+            color: #12344d;
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+
+        .severity {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .high {
+            background: #ffe0e0;
+            color: #b42318;
+        }
+
+        .medium {
+            background: #fff0d6;
+            color: #a15c00;
+        }
+
+        .low {
+            background: #dcfce7;
+            color: #16703a;
+        }
+
+        .description {
+            color: #667085;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .reporter {
+            background: #f5f9fc;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 15px;
+            font-size: 13px;
+            color: #52606d;
+            line-height: 1.7;
+        }
+
+        .reporter strong {
+            color: #12344d;
+        }
+
+        .location {
+            color: #52606d;
+            font-size: 13px;
+            line-height: 1.6;
+            margin-bottom: 8px;
+        }
+
+        .date {
+            color: #98a2b3;
+            font-size: 12px;
+        }
+
+        .no-reports {
+            grid-column: 1 / -1;
+            text-align: center;
+            background: white;
+            padding: 50px;
+            border-radius: 15px;
+            color: #667085;
+        }
+
+        .no-reports h2 {
+            color: #12344d;
+            margin-bottom: 10px;
+        }
+
+        .no-reports a {
+            display: inline-block;
+            margin-top: 20px;
+            text-decoration: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            background: #1261a0;
+            color: white;
+        }
+
+        footer {
+            background: #0c2638;
+            color: #d5e1e9;
+            text-align: center;
+            padding: 25px;
+            font-size: 14px;
+        }
+
+        @media (max-width: 900px) {
+            .reports-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 600px) {
+            header {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            nav {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .reports-container {
+                grid-template-columns: 1fr;
+                width: 90%;
+            }
+
+            .page-header h1 {
+                font-size: 30px;
+            }
+        }
+    </style>
 </head>
 
 <body>
 
-
 <header>
-
     <div class="logo">
         ♿ Accessible Transit
     </div>
 
     <nav>
-
-        <a href="index.html" class="home-btn">
-            Home
-        </a>
-
-        <a href="map.html" class="report-btn">
-            Report a Problem
-        </a>
-
-        <a href="dashboard.html" class="dashboard-btn">
-            Dashboard
-        </a>
-
+        <a href="index.html" class="home-btn">Home</a>
+        <a href="map.html" class="report-btn">Report a Problem</a>
+        <a href="dashboard.html" class="dashboard-btn">Dashboard</a>
     </nav>
-
 </header>
 
-
 <section class="page-header">
-
-    <h1>
-        Community Accessibility Reports
-    </h1>
-
+    <h1>Community Accessibility Reports</h1>
     <p>
         Explore accessibility barriers reported by the community.
     </p>
-
 </section>
-
 
 <div id="loading">
     Loading reports...
 </div>
 
-
 <div id="error"></div>
-
 
 <section id="reportsContainer" class="reports-container">
 </section>
-
 
 <footer>
     © 2026 Accessible Transit | Safer Mobility for Everyone
 </footer>
 
-
 <script>
-
     const reportsContainer =
         document.getElementById("reportsContainer");
 
@@ -337,7 +308,7 @@
         try {
 
             const response =
-                await fetch("https://para-payment-joke-main.trycloudflare.com/api/reports");
+                await fetch("https://accessibletransit.onrender.com/api/reports");
 
             const data =
                 await response.json();
@@ -536,7 +507,5 @@
 
 </script>
 
-
 </body>
-
 </html>

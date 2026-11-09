@@ -1,10 +1,8 @@
-
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>Accessible Transit | Admin Dashboard</title>
 
     <style>
@@ -357,7 +355,7 @@
 
         table {
             width: 100%;
-            min-width: 1200px;
+            min-width: 1300px;
             border-collapse: collapse;
         }
 
@@ -604,9 +602,7 @@
 
 <body>
 
-<!-- =======================================
-     ADMIN LOGIN
-======================================= -->
+<!-- ADMIN LOGIN -->
 
 <section class="login-page" id="loginPage">
     <div class="login-card">
@@ -665,9 +661,7 @@
 </section>
 
 
-<!-- =======================================
-     ADMIN DASHBOARD
-======================================= -->
+<!-- ADMIN DASHBOARD -->
 
 <div id="dashboardPage" class="hidden">
 
@@ -683,6 +677,7 @@
         </div>
 
         <div class="header-actions">
+
             <span class="admin-label" id="adminIdentity">
                 Administrator
             </span>
@@ -694,6 +689,7 @@
             >
                 Logout
             </button>
+
         </div>
 
     </header>
@@ -810,6 +806,7 @@
                     <thead>
                         <tr>
                             <th>Report ID</th>
+                            <th>Submitted By</th>
                             <th>Issue Type</th>
                             <th>Description</th>
                             <th>Location</th>
@@ -825,7 +822,7 @@
                     <tbody id="reportsTableBody">
 
                         <tr>
-                            <td colspan="10" class="message">
+                            <td colspan="11" class="message">
                                 Please log in as an administrator.
                             </td>
                         </tr>
@@ -848,9 +845,7 @@
 </div>
 
 
-<!-- =======================================
-     UPDATE REPORT MODAL
-======================================= -->
+<!-- UPDATE REPORT MODAL -->
 
 <div
     class="modal"
@@ -939,10 +934,7 @@
    CONFIGURATION
 ========================================== */
 
-// The page is served by the Express backend.
-// Example: http://localhost:3000/frontend/admin.html
-
-const API_BASE_URL = "https://para-payment-joke-main.trycloudflare.com/api";
+const API_BASE_URL = "https://accessibletransit.onrender.com/api";
 
 const LOGIN_API_URL = `${API_BASE_URL}/admin/login`;
 const REPORTS_API_URL = `${API_BASE_URL}/admin/reports`;
@@ -1020,9 +1012,9 @@ function showDashboard(user) {
         "Administrator";
 
     document.getElementById("adminIdentity").textContent = displayName;
+
     document.getElementById("resolvedBy").value =
         user.name || user.username || "";
-
 }
 
 
@@ -1254,6 +1246,38 @@ function getIssueType(report) {
     );
 }
 
+/* NEW: GET THE USER WHO SUBMITTED THE REPORT */
+
+function getSubmittedBy(report) {
+    const submitter =
+        report.submittedBy ||
+        report.user ||
+        report.createdBy ||
+        report.reporter ||
+        report.reportedBy ||
+        null;
+
+    if (submitter && typeof submitter === "object") {
+        return (
+            submitter.name ||
+            submitter.username ||
+            submitter.fullName ||
+            submitter.email ||
+            submitter._id ||
+            "Not available"
+        );
+    }
+
+    return (
+        submitter ||
+        report.userName ||
+        report.username ||
+        report.userEmail ||
+        report.email ||
+        "Not available"
+    );
+}
+
 function getDescription(report) {
     return report.description || "No description provided";
 }
@@ -1290,7 +1314,6 @@ function getImageURL(report) {
         return "";
     }
 
-    // Matches a backend that serves uploaded files at /uploads/<filename>.
     return `/uploads/${encodeURIComponent(filename)}`;
 }
 
@@ -1333,7 +1356,7 @@ function showToast(message, isError = false) {
 async function loadReports() {
     tableBody.innerHTML = `
         <tr>
-            <td colspan="10" class="message">Loading reports...</td>
+            <td colspan="11" class="message">Loading reports...</td>
         </tr>
     `;
 
@@ -1371,7 +1394,7 @@ async function loadReports() {
 
         tableBody.innerHTML = `
             <tr>
-                <td colspan="10" class="message error">
+                <td colspan="11" class="message error">
                     Unable to load reports.<br><br>
                     ${escapeHTML(error.message)}
                 </td>
@@ -1429,6 +1452,7 @@ function renderReports() {
     const filteredReports = allReports.filter(function(report) {
         const searchableText = [
             report._id,
+            getSubmittedBy(report),
             getIssueType(report),
             getDescription(report),
             report.location,
@@ -1453,7 +1477,7 @@ function renderReports() {
     if (filteredReports.length === 0) {
         tableBody.innerHTML = `
             <tr>
-                <td colspan="10" class="message">
+                <td colspan="11" class="message">
                     No reports found.
                 </td>
             </tr>
@@ -1530,6 +1554,8 @@ function renderReports() {
         return `
             <tr>
                 <td>${escapeHTML(id ? id.slice(-8) : "N/A")}</td>
+
+                <td>${escapeHTML(getSubmittedBy(report))}</td>
 
                 <td>${escapeHTML(getIssueType(report))}</td>
 
@@ -1772,6 +1798,7 @@ function downloadCSV() {
     const reportsToDownload = allReports.filter(function(report) {
         const searchableText = [
             report._id,
+            getSubmittedBy(report),
             getIssueType(report),
             getDescription(report),
             report.location,
@@ -1800,6 +1827,7 @@ function downloadCSV() {
 
     const columns = [
         "Report ID",
+        "Submitted By",
         "Issue Type",
         "Description",
         "Latitude",
@@ -1827,6 +1855,7 @@ function downloadCSV() {
     reportsToDownload.forEach(function(report) {
         rows.push([
             report._id || report.id || "",
+            getSubmittedBy(report),
             getIssueType(report),
             getDescription(report),
             getLatitude(report) ?? "",
@@ -1924,8 +1953,8 @@ document.addEventListener("keydown", function(event) {
         await loadReports();
     }
 })();
+
 </script>
 
 </body>
 </html>
-

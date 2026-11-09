@@ -1,4 +1,3 @@
-
 require("dotenv").config();
 
 const express = require("express");
@@ -47,36 +46,85 @@ if (ADMIN_PASSWORD.length < 12) {
 }
 
 // =====================================================
+// DIRECTORY CONFIGURATION
+// =====================================================
+
+const frontendPath = path.resolve(__dirname, "../frontend");
+
+const uploadsPath = path.resolve(__dirname, "uploads");
+
+fs.mkdirSync(uploadsPath, { recursive: true });
+
+console.log("Frontend directory:", frontendPath);
+console.log("Uploads directory:", uploadsPath);
+
+// =====================================================
 // MIDDLEWARE
 // =====================================================
 
 app.use(cors());
-app.use(express.json({ limit: "1mb" }));
-app.use(express.urlencoded({ extended: true }));
 
-const frontendPath = path.resolve(__dirname, "../frontend");
+app.use(express.json({
+    limit: "1mb"
+}));
+
+app.use(express.urlencoded({
+    extended: true
+}));
+
+// =====================================================
+// IMAGE UPLOAD CONFIGURATION
+// IMPORTANT: REGISTER BEFORE FRONTEND STATIC ROUTE
+// =====================================================
+
+// Make uploaded images publicly accessible.
+// Example:
+// https://accessibletransit.onrender.com/uploads/image.jpg
+
+app.use(
+    "/uploads",
+    express.static(uploadsPath, {
+        index: false,
+        maxAge: "1d",
+        setHeaders: function (res) {
+            res.setHeader(
+                "Access-Control-Allow-Origin",
+                "*"
+            );
+
+            res.setHeader(
+                "X-Content-Type-Options",
+                "nosniff"
+            );
+        }
+    })
+);
+
+// =====================================================
+// FRONTEND STATIC FILES
+// =====================================================
 
 app.use(express.static(frontendPath));
 
 // =====================================================
-// IMAGE UPLOAD CONFIGURATION
+// MULTER STORAGE
 // =====================================================
 
-const uploadsPath = path.join(__dirname, "uploads");
-
-fs.mkdirSync(uploadsPath, { recursive: true });
-
-app.use("/uploads", express.static(uploadsPath));
-
 const storage = multer.diskStorage({
+
     destination: function (req, file, cb) {
+
         cb(null, uploadsPath);
+
     },
 
     filename: function (req, file, cb) {
-        const extension = path.extname(file.originalname)
-            .toLowerCase()
-            .replace(/[^a-z0-9.]/g, "");
+
+        const extension = path.extname(
+            file.originalname
+        )
+        .toLowerCase()
+        .replace(/[^a-z0-9.]/g, "");
 
         const filename =
             Date.now() +
@@ -85,10 +133,13 @@ const storage = multer.diskStorage({
             extension;
 
         cb(null, filename);
+
     }
+
 });
 
 const upload = multer({
+
     storage: storage,
 
     limits: {
@@ -97,6 +148,7 @@ const upload = multer({
     },
 
     fileFilter: function (req, file, cb) {
+
         const allowedTypes = [
             "image/jpeg",
             "image/png",
@@ -105,13 +157,19 @@ const upload = multer({
         ];
 
         if (allowedTypes.includes(file.mimetype)) {
+
             return cb(null, true);
+
         }
 
         return cb(
-            new Error("Only JPEG, PNG, WEBP, and GIF images are allowed.")
+            new Error(
+                "Only JPEG, PNG, WEBP, and GIF images are allowed."
+            )
         );
+
     }
+
 });
 
 // =====================================================
@@ -119,6 +177,7 @@ const upload = multer({
 // =====================================================
 
 const userSchema = new mongoose.Schema({
+
     name: {
         type: String,
         required: true,
@@ -149,6 +208,7 @@ const userSchema = new mongoose.Schema({
         type: Date,
         default: Date.now
     }
+
 });
 
 const User = mongoose.model("User", userSchema);
@@ -158,6 +218,7 @@ const User = mongoose.model("User", userSchema);
 // =====================================================
 
 const reportSchema = new mongoose.Schema({
+
     type: {
         type: String,
         required: true,
@@ -212,7 +273,12 @@ const reportSchema = new mongoose.Schema({
 
     status: {
         type: String,
-        enum: ["Reported", "Pending", "In Progress", "Resolved"],
+        enum: [
+            "Reported",
+            "Pending",
+            "In Progress",
+            "Resolved"
+        ],
         default: "Reported"
     },
 
@@ -240,6 +306,7 @@ const reportSchema = new mongoose.Schema({
         type: Date,
         default: Date.now
     }
+
 });
 
 const Report = mongoose.model("Report", reportSchema);
@@ -249,6 +316,7 @@ const Report = mongoose.model("Report", reportSchema);
 // =====================================================
 
 async function ensureAdminAccount() {
+
     const email = ADMIN_EMAIL;
 
     const hashedPassword = await bcrypt.hash(
@@ -256,10 +324,12 @@ async function ensureAdminAccount() {
         12
     );
 
-    const existingUser = await User.findOne({ email })
-        .select("+password");
+    const existingUser = await User.findOne({
+        email
+    }).select("+password");
 
     if (existingUser) {
+
         existingUser.name = "Accessible Transit Admin";
         existingUser.email = email;
         existingUser.password = hashedPassword;
@@ -268,19 +338,24 @@ async function ensureAdminAccount() {
         await existingUser.save();
 
         console.log("Administrator account synchronized.");
+
         return;
+
     }
 
     const admin = new User({
+
         name: "Accessible Transit Admin",
         email: email,
         password: hashedPassword,
         role: "admin"
+
     });
 
     await admin.save();
 
     console.log("Administrator account created successfully.");
+
 }
 
 // =====================================================
@@ -288,14 +363,20 @@ async function ensureAdminAccount() {
 // =====================================================
 
 async function authenticateToken(req, res, next) {
+
     try {
+
         const authHeader = req.headers.authorization;
 
         if (!authHeader) {
+
             return res.status(401).json({
+
                 success: false,
                 message: "Please log in first."
+
             });
+
         }
 
         const parts = authHeader.split(" ");
@@ -304,21 +385,34 @@ async function authenticateToken(req, res, next) {
             parts.length !== 2 ||
             parts[0].toLowerCase() !== "bearer"
         ) {
+
             return res.status(401).json({
+
                 success: false,
                 message: "Invalid authentication format."
+
             });
+
         }
 
-        const decoded = jwt.verify(parts[1], JWT_SECRET);
+        const decoded = jwt.verify(
+            parts[1],
+            JWT_SECRET
+        );
 
-        const user = await User.findById(decoded.userId);
+        const user = await User.findById(
+            decoded.userId
+        );
 
         if (!user) {
+
             return res.status(401).json({
+
                 success: false,
                 message: "Account not found."
+
             });
+
         }
 
         req.user = user;
@@ -326,22 +420,33 @@ async function authenticateToken(req, res, next) {
         return next();
 
     } catch (error) {
+
         return res.status(401).json({
+
             success: false,
             message: "Invalid or expired login session."
+
         });
+
     }
+
 }
 
 function requireAdmin(req, res, next) {
+
     if (!req.user || req.user.role !== "admin") {
+
         return res.status(403).json({
+
             success: false,
             message: "Administrator access is required."
+
         });
+
     }
 
     return next();
+
 }
 
 // =====================================================
@@ -349,7 +454,11 @@ function requireAdmin(req, res, next) {
 // =====================================================
 
 app.get("/", function (req, res) {
-    res.sendFile(path.join(frontendPath, "index.html"));
+
+    res.sendFile(
+        path.join(frontendPath, "index.html")
+    );
+
 });
 
 // =====================================================
@@ -357,10 +466,53 @@ app.get("/", function (req, res) {
 // =====================================================
 
 app.get("/api/test", function (req, res) {
+
     res.json({
+
         success: true,
         message: "Accessible Transit API is working."
+
     });
+
+});
+
+// =====================================================
+// UPLOADS TEST
+// =====================================================
+
+app.get("/api/uploads-test", function (req, res) {
+
+    try {
+
+        const files = fs.readdirSync(uploadsPath);
+
+        return res.json({
+
+            success: true,
+
+            message: "Uploads folder is connected.",
+
+            uploadsDirectory: uploadsPath,
+
+            totalImages: files.length,
+
+            files: files
+
+        });
+
+    } catch (error) {
+
+        console.error("UPLOADS TEST ERROR:", error.message);
+
+        return res.status(500).json({
+
+            success: false,
+            message: "Unable to read uploads folder."
+
+        });
+
+    }
+
 });
 
 // =====================================================
@@ -368,8 +520,14 @@ app.get("/api/test", function (req, res) {
 // =====================================================
 
 app.post("/api/signup", async function (req, res) {
+
     try {
-        const { name, email, password } = req.body;
+
+        const {
+            name,
+            email,
+            password
+        } = req.body;
 
         if (
             typeof name !== "string" ||
@@ -379,70 +537,109 @@ app.post("/api/signup", async function (req, res) {
             !email.trim() ||
             !password
         ) {
+
             return res.status(400).json({
+
                 success: false,
                 message: "Please fill in all fields."
+
             });
+
         }
 
         if (password.length < 6) {
+
             return res.status(400).json({
+
                 success: false,
                 message: "Password must contain at least 6 characters."
+
             });
+
         }
 
-        const cleanEmail = email.trim().toLowerCase();
+        const cleanEmail = email
+            .trim()
+            .toLowerCase();
 
         if (cleanEmail === ADMIN_EMAIL) {
+
             return res.status(409).json({
+
                 success: false,
                 message: "This email is reserved for the administrator."
+
             });
+
         }
 
         const existingUser = await User.findOne({
+
             email: cleanEmail
+
         });
 
         if (existingUser) {
+
             return res.status(409).json({
+
                 success: false,
                 message: "An account with this email already exists."
+
             });
+
         }
 
-        const hashedPassword = await bcrypt.hash(password, 10);
+        const hashedPassword = await bcrypt.hash(
+            password,
+            10
+        );
 
         const newUser = new User({
+
             name: name.trim(),
             email: cleanEmail,
             password: hashedPassword,
             role: "user"
+
         });
 
         await newUser.save();
 
         return res.status(201).json({
+
             success: true,
             message: "Account created successfully."
+
         });
 
     } catch (error) {
-        console.error("SIGNUP ERROR:", error.message);
+
+        console.error(
+            "SIGNUP ERROR:",
+            error.message
+        );
 
         if (error.code === 11000) {
+
             return res.status(409).json({
+
                 success: false,
                 message: "An account with this email already exists."
+
             });
+
         }
 
         return res.status(500).json({
+
             success: false,
             message: "Unable to create account."
+
         });
+
     }
+
 });
 
 // =====================================================
@@ -450,8 +647,13 @@ app.post("/api/signup", async function (req, res) {
 // =====================================================
 
 async function performLogin(req, res, adminOnly) {
+
     try {
-        const { email, password } = req.body;
+
+        const {
+            email,
+            password
+        } = req.body;
 
         if (
             typeof email !== "string" ||
@@ -459,21 +661,31 @@ async function performLogin(req, res, adminOnly) {
             !email.trim() ||
             !password
         ) {
+
             return res.status(400).json({
+
                 success: false,
                 message: "Enter your email and password."
+
             });
+
         }
 
         const user = await User.findOne({
+
             email: email.trim().toLowerCase()
+
         }).select("+password");
 
         if (!user) {
+
             return res.status(401).json({
+
                 success: false,
                 message: "Invalid email or password."
+
             });
+
         }
 
         const passwordMatch = await bcrypt.compare(
@@ -482,58 +694,88 @@ async function performLogin(req, res, adminOnly) {
         );
 
         if (!passwordMatch) {
+
             return res.status(401).json({
+
                 success: false,
                 message: "Invalid email or password."
+
             });
+
         }
 
         if (adminOnly && user.role !== "admin") {
+
             return res.status(403).json({
+
                 success: false,
                 message: "This account is not an administrator."
+
             });
+
         }
 
         if (!adminOnly && user.role === "admin") {
+
             return res.status(403).json({
+
                 success: false,
                 message: "Please use the administrator login page."
+
             });
+
         }
 
         const token = jwt.sign(
+
             {
                 userId: user._id.toString(),
                 email: user.email
             },
+
             JWT_SECRET,
+
             {
                 expiresIn: "1d"
             }
+
         );
 
         return res.json({
+
             success: true,
+
             message: "Login successful.",
+
             token: token,
 
             user: {
+
                 id: user._id.toString(),
                 name: user.name,
                 email: user.email,
                 role: user.role
+
             }
+
         });
 
     } catch (error) {
-        console.error("LOGIN ERROR:", error.message);
+
+        console.error(
+            "LOGIN ERROR:",
+            error.message
+        );
 
         return res.status(500).json({
+
             success: false,
             message: "Unable to log in."
+
         });
+
     }
+
 }
 
 // =====================================================
@@ -541,7 +783,9 @@ async function performLogin(req, res, adminOnly) {
 // =====================================================
 
 app.post("/api/login", function (req, res) {
+
     return performLogin(req, res, false);
+
 });
 
 // =====================================================
@@ -549,25 +793,37 @@ app.post("/api/login", function (req, res) {
 // =====================================================
 
 app.post("/api/admin/login", function (req, res) {
+
     return performLogin(req, res, true);
+
 });
 
 // =====================================================
 // CURRENT LOGGED-IN USER
 // =====================================================
 
-app.get("/api/me", authenticateToken, function (req, res) {
-    return res.json({
-        success: true,
+app.get(
+    "/api/me",
+    authenticateToken,
+    function (req, res) {
 
-        user: {
-            id: req.user._id.toString(),
-            name: req.user.name,
-            email: req.user.email,
-            role: req.user.role
-        }
-    });
-});
+        return res.json({
+
+            success: true,
+
+            user: {
+
+                id: req.user._id.toString(),
+                name: req.user.name,
+                email: req.user.email,
+                role: req.user.role
+
+            }
+
+        });
+
+    }
+);
 
 // =====================================================
 // CREATE ACCESSIBILITY REPORT
@@ -575,10 +831,15 @@ app.get("/api/me", authenticateToken, function (req, res) {
 
 app.post(
     "/api/reports",
+
     authenticateToken,
+
     upload.single("image"),
+
     async function (req, res) {
+
         try {
+
             const {
                 type,
                 description,
@@ -599,17 +860,29 @@ app.post(
                 latitude === "" ||
                 longitude === ""
             ) {
+
                 return res.status(400).json({
+
                     success: false,
                     message: "Please fill in all required fields."
+
                 });
+
             }
 
-            if (!["High", "Medium", "Low"].includes(severity.trim())) {
+            if (
+                !["High", "Medium", "Low"].includes(
+                    severity.trim()
+                )
+            ) {
+
                 return res.status(400).json({
+
                     success: false,
                     message: "Invalid severity."
+
                 });
+
             }
 
             const lat = Number(latitude);
@@ -623,49 +896,75 @@ app.post(
                 lng < -180 ||
                 lng > 180
             ) {
+
                 return res.status(400).json({
+
                     success: false,
                     message: "Invalid map coordinates."
+
                 });
+
             }
 
             const newReport = new Report({
+
                 type: type.trim(),
+
                 description: description.trim(),
+
                 severity: severity.trim(),
 
                 latitude: lat,
+
                 longitude: lng,
 
+                // Store the public image path in MongoDB.
                 image: req.file
                     ? "/uploads/" + req.file.filename
                     : null,
 
                 userId: req.user._id.toString(),
+
                 userName: req.user.name,
+
                 userEmail: req.user.email,
 
                 status: "Reported",
+
                 updatedAt: new Date()
+
             });
 
             const savedReport = await newReport.save();
 
             return res.status(201).json({
+
                 success: true,
+
                 message: "Accessibility report submitted.",
+
                 report: savedReport
+
             });
 
         } catch (error) {
-            console.error("CREATE REPORT ERROR:", error.message);
+
+            console.error(
+                "CREATE REPORT ERROR:",
+                error.message
+            );
 
             return res.status(500).json({
+
                 success: false,
                 message: "Unable to create report."
+
             });
+
         }
+
     }
+
 );
 
 // =====================================================
@@ -673,30 +972,48 @@ app.post(
 // =====================================================
 
 app.get("/api/reports", async function (req, res) {
+
     try {
-        const includeResolved = req.query.includeResolved === "true";
+
+        const includeResolved =
+            req.query.includeResolved === "true";
 
         const filter = includeResolved
             ? {}
-            : { status: { $nin: ["Resolved"] } };
+            : {
+                status: {
+                    $nin: ["Resolved"]
+                }
+            };
 
         const reports = await Report.find(filter)
             .sort({ createdAt: -1 })
             .lean();
 
         return res.json({
+
             success: true,
+
             reports: reports
+
         });
 
     } catch (error) {
-        console.error("FETCH REPORTS ERROR:", error.message);
+
+        console.error(
+            "FETCH REPORTS ERROR:",
+            error.message
+        );
 
         return res.status(500).json({
+
             success: false,
             message: "Unable to fetch reports."
+
         });
+
     }
+
 });
 
 // =====================================================
@@ -705,28 +1022,45 @@ app.get("/api/reports", async function (req, res) {
 
 app.get(
     "/api/my-reports",
+
     authenticateToken,
+
     async function (req, res) {
+
         try {
+
             const reports = await Report.find({
+
                 userId: req.user._id.toString()
+
             })
-                .sort({ createdAt: -1 })
-                .lean();
+            .sort({ createdAt: -1 })
+            .lean();
 
             return res.json({
+
                 success: true,
+
                 reports: reports
+
             });
 
         } catch (error) {
-            console.error("MY REPORTS ERROR:", error.message);
+
+            console.error(
+                "MY REPORTS ERROR:",
+                error.message
+            );
 
             return res.status(500).json({
+
                 success: false,
                 message: "Unable to fetch your reports."
+
             });
+
         }
+
     }
 );
 
@@ -736,36 +1070,76 @@ app.get(
 
 app.get(
     "/api/admin/reports",
+
     authenticateToken,
+
     requireAdmin,
+
     async function (req, res) {
+
         try {
+
             const reports = await Report.find()
                 .sort({ createdAt: -1 })
                 .lean();
 
-            const normalizedReports = reports.map(function (report) {
-                return {
-                    ...report,
-                    status: report.status === "Reported"
-                        ? "Pending"
-                        : report.status
-                };
-            });
+            const normalizedReports = reports.map(
+                function (report) {
+
+                    const imagePath = report.image || null;
+
+                    return {
+
+                        ...report,
+
+                        // Preserve the original image field.
+                        image: imagePath,
+
+                        // Also provide a consistent image URL field.
+                        imageUrl: imagePath
+                            ? (
+                                /^https?:\/\//i.test(imagePath)
+                                    ? imagePath
+                                    : "/uploads/" +
+                                        String(imagePath)
+                                            .replace(/^\/+/, "")
+                                            .replace(/^uploads\/+/i, "")
+                              )
+                            : null,
+
+                        status: report.status === "Reported"
+                            ? "Pending"
+                            : report.status
+
+                    };
+
+                }
+            );
 
             return res.json({
+
                 success: true,
+
                 reports: normalizedReports
+
             });
 
         } catch (error) {
-            console.error("ADMIN REPORT FETCH ERROR:", error.message);
+
+            console.error(
+                "ADMIN REPORT FETCH ERROR:",
+                error.message
+            );
 
             return res.status(500).json({
+
                 success: false,
                 message: "Unable to fetch reports."
+
             });
+
         }
+
     }
 );
 
@@ -775,10 +1149,15 @@ app.get(
 
 app.patch(
     "/api/admin/reports/:id/status",
+
     authenticateToken,
+
     requireAdmin,
+
     async function (req, res) {
+
         try {
+
             const { id } = req.params;
 
             const {
@@ -787,38 +1166,55 @@ app.patch(
                 resolvedBy
             } = req.body;
 
-            const normalizedStatus = status === "Pending"
-                ? "Reported"
-                : status;
+            const normalizedStatus =
+                status === "Pending"
+                    ? "Reported"
+                    : status;
 
             const allowedStatuses = [
+
                 "Reported",
                 "In Progress",
                 "Resolved"
+
             ];
 
             if (!mongoose.isValidObjectId(id)) {
+
                 return res.status(400).json({
+
                     success: false,
                     message: "Invalid report ID."
+
                 });
+
             }
 
-            if (!allowedStatuses.includes(normalizedStatus)) {
+            if (
+                !allowedStatuses.includes(normalizedStatus)
+            ) {
+
                 return res.status(400).json({
+
                     success: false,
                     message: "Invalid report status."
+
                 });
+
             }
 
             if (
                 typeof resolvedBy !== "string" ||
                 !resolvedBy.trim()
             ) {
+
                 return res.status(400).json({
+
                     success: false,
                     message: "Administrator name is required."
+
                 });
+
             }
 
             if (
@@ -828,56 +1224,88 @@ app.patch(
                     !resolutionNotes.trim()
                 )
             ) {
+
                 return res.status(400).json({
+
                     success: false,
                     message: "Resolution details are required."
+
                 });
+
             }
 
             const report = await Report.findById(id);
 
             if (!report) {
+
                 return res.status(404).json({
+
                     success: false,
                     message: "Report not found."
+
                 });
+
             }
 
             report.status = normalizedStatus;
-            report.resolutionNotes = resolutionNotes.trim();
-            report.resolvedBy = resolvedBy.trim();
+
+            report.resolutionNotes =
+                resolutionNotes.trim();
+
+            report.resolvedBy =
+                resolvedBy.trim();
+
             report.updatedAt = new Date();
 
             if (normalizedStatus === "Resolved") {
+
                 if (!report.resolvedAt) {
+
                     report.resolvedAt = new Date();
+
                 }
+
             } else {
+
                 report.resolvedAt = null;
+
             }
 
             await report.save();
 
             const result = report.toObject();
 
-            result.status = result.status === "Reported"
-                ? "Pending"
-                : result.status;
+            result.status =
+                result.status === "Reported"
+                    ? "Pending"
+                    : result.status;
 
             return res.json({
+
                 success: true,
+
                 message: "Report updated successfully.",
+
                 report: result
+
             });
 
         } catch (error) {
-            console.error("STATUS UPDATE ERROR:", error.message);
+
+            console.error(
+                "STATUS UPDATE ERROR:",
+                error.message
+            );
 
             return res.status(500).json({
+
                 success: false,
                 message: "Unable to update report status."
+
             });
+
         }
+
     }
 );
 
@@ -886,21 +1314,28 @@ app.patch(
 // =====================================================
 
 function csvEscape(value) {
-    let text = value === null || value === undefined
-        ? ""
-        : String(value);
 
-    // Prevent spreadsheet formula injection.
+    let text =
+        value === null || value === undefined
+            ? ""
+            : String(value);
+
     if (/^[\s]*[=+\-@]/.test(text)) {
+
         text = "'" + text;
+
     }
 
     return '"' + text.replace(/"/g, '""') + '"';
+
 }
 
 function formatDate(date) {
+
     if (!date) {
+
         return "";
+
     }
 
     const parsedDate = new Date(date);
@@ -908,6 +1343,7 @@ function formatDate(date) {
     return Number.isNaN(parsedDate.getTime())
         ? ""
         : parsedDate.toISOString();
+
 }
 
 // =====================================================
@@ -916,15 +1352,21 @@ function formatDate(date) {
 
 app.get(
     "/api/admin/reports/download.csv",
+
     authenticateToken,
+
     requireAdmin,
+
     async function (req, res) {
+
         try {
+
             const reports = await Report.find()
                 .sort({ createdAt: -1 })
                 .lean();
 
             const columns = [
+
                 "Report ID",
                 "Problem Type",
                 "Description",
@@ -940,12 +1382,15 @@ app.get(
                 "Resolved By",
                 "Last Updated (UTC)",
                 "Resolved Date and Time (UTC)"
+
             ];
 
             const rows = [columns];
 
             for (const report of reports) {
+
                 rows.push([
+
                     report._id,
                     report.type,
                     report.description,
@@ -965,13 +1410,19 @@ app.get(
                     report.resolvedBy,
                     formatDate(report.updatedAt),
                     formatDate(report.resolvedAt)
+
                 ]);
+
             }
 
             const csv = rows
+
                 .map(function (row) {
+
                     return row.map(csvEscape).join(",");
+
                 })
+
                 .join("\r\n");
 
             res.setHeader(
@@ -987,13 +1438,21 @@ app.get(
             return res.send("\uFEFF" + csv);
 
         } catch (error) {
-            console.error("CSV DOWNLOAD ERROR:", error.message);
+
+            console.error(
+                "CSV DOWNLOAD ERROR:",
+                error.message
+            );
 
             return res.status(500).json({
+
                 success: false,
                 message: "Unable to download reports."
+
             });
+
         }
+
     }
 );
 
@@ -1003,43 +1462,72 @@ app.get(
 
 app.get(
     "/api/admin/dashboard",
+
     authenticateToken,
+
     requireAdmin,
+
     async function (req, res) {
+
         try {
-            const total = await Report.countDocuments({});
 
-            const pending = await Report.countDocuments({
-                status: { $in: ["Reported", "Pending"] }
-            });
+            const total =
+                await Report.countDocuments({});
 
-            const inProgress = await Report.countDocuments({
-                status: "In Progress"
-            });
+            const pending =
+                await Report.countDocuments({
 
-            const resolved = await Report.countDocuments({
-                status: "Resolved"
-            });
+                    status: {
+                        $in: ["Reported", "Pending"]
+                    }
+
+                });
+
+            const inProgress =
+                await Report.countDocuments({
+
+                    status: "In Progress"
+
+                });
+
+            const resolved =
+                await Report.countDocuments({
+
+                    status: "Resolved"
+
+                });
 
             return res.json({
+
                 success: true,
 
                 statistics: {
+
                     total,
                     pending,
                     inProgress,
                     resolved
+
                 }
+
             });
 
         } catch (error) {
-            console.error("ADMIN DASHBOARD ERROR:", error.message);
+
+            console.error(
+                "ADMIN DASHBOARD ERROR:",
+                error.message
+            );
 
             return res.status(500).json({
+
                 success: false,
                 message: "Unable to fetch dashboard statistics."
+
             });
+
         }
+
     }
 );
 
@@ -1048,14 +1536,20 @@ app.get(
 // =====================================================
 
 app.use(function (req, res) {
+
     if (req.path.startsWith("/api/")) {
+
         return res.status(404).json({
+
             success: false,
             message: "API endpoint not found."
+
         });
+
     }
 
     return res.status(404).send("Page not found.");
+
 });
 
 // =====================================================
@@ -1063,27 +1557,42 @@ app.use(function (req, res) {
 // =====================================================
 
 app.use(function (error, req, res, next) {
+
     if (res.headersSent) {
+
         return next(error);
+
     }
 
     if (error instanceof multer.MulterError) {
-        const message = error.code === "LIMIT_FILE_SIZE"
-            ? "Image size must not exceed 5 MB."
-            : error.message;
+
+        const message =
+            error.code === "LIMIT_FILE_SIZE"
+                ? "Image size must not exceed 5 MB."
+                : error.message;
 
         return res.status(400).json({
+
             success: false,
             message: message
+
         });
+
     }
 
-    console.error("REQUEST ERROR:", error.message);
+    console.error(
+        "REQUEST ERROR:",
+        error.message
+    );
 
     return res.status(400).json({
+
         success: false,
+
         message: error.message || "Request failed."
+
     });
+
 });
 
 // =====================================================
@@ -1091,15 +1600,24 @@ app.use(function (error, req, res, next) {
 // =====================================================
 
 mongoose.connection.on("connected", function () {
+
     console.log("MongoDB connection is active.");
+
 });
 
 mongoose.connection.on("disconnected", function () {
+
     console.log("WARNING: MongoDB disconnected.");
+
 });
 
 mongoose.connection.on("error", function (error) {
-    console.error("MongoDB connection error:", error.message);
+
+    console.error(
+        "MongoDB connection error:",
+        error.message
+    );
+
 });
 
 // =====================================================
@@ -1107,12 +1625,17 @@ mongoose.connection.on("error", function (error) {
 // =====================================================
 
 async function startServer() {
+
     try {
+
         console.log("Connecting to MongoDB...");
 
         await mongoose.connect(MONGO_URI, {
+
             serverSelectionTimeoutMS: 10000,
+
             connectTimeoutMS: 10000
+
         });
 
         console.log("MongoDB connected successfully.");
@@ -1120,26 +1643,55 @@ async function startServer() {
         await ensureAdminAccount();
 
         app.listen(PORT, function () {
+
             console.log("");
+
             console.log("======================================");
+
             console.log(" Accessible Transit Server Started");
+
             console.log("======================================");
-            console.log("Server: http://localhost:" + PORT);
-            console.log("Admin:  http://localhost:" + PORT + "/admin.html");
-            console.log("API:    http://localhost:" + PORT + "/api/test");
+
+            console.log(
+                "Server: http://localhost:" + PORT
+            );
+
+            console.log(
+                "Admin:  http://localhost:" + PORT + "/admin.html"
+            );
+
+            console.log(
+                "API:    http://localhost:" + PORT + "/api/test"
+            );
+
+            console.log(
+                "Images: http://localhost:" + PORT + "/uploads/"
+            );
+
+            console.log(
+                "Uploads folder: " + uploadsPath
+            );
+
             console.log("======================================");
+
             console.log("");
+
         });
 
     } catch (error) {
+
         console.error("");
+
         console.error("========== SERVER START FAILED ==========");
+
         console.error(error.message);
+
         console.error("=========================================");
 
         process.exit(1);
+
     }
+
 }
 
 startServer();
-
