@@ -4,6 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <title>Accessible Transit Login</title>
 
@@ -171,113 +172,6 @@ a:hover {
     margin-top: 25px;
 }
 
-/* COMMUNITY REPORTS */
-
-.community {
-    max-width: 1050px;
-    margin: 35px auto;
-    padding: 30px;
-    background: white;
-    border-radius: 20px;
-    box-shadow: 0 5px 25px #0002;
-}
-
-.community h2 {
-    color: #087f72;
-    font-size: 28px;
-    margin-bottom: 10px;
-}
-
-.community-subtitle {
-    color: #777;
-    margin-bottom: 25px;
-}
-
-.reports-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 22px;
-}
-
-.report-card {
-    border: 1px solid #e5e5e5;
-    border-radius: 14px;
-    overflow: hidden;
-    background: #fff;
-    box-shadow: 0 3px 12px #0001;
-}
-
-.report-image {
-    width: 100%;
-    height: 220px;
-    object-fit: cover;
-    display: block;
-    background: #f1f1f1;
-}
-
-.no-image {
-    height: 180px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: #777;
-    background: #f1f1f1;
-}
-
-.report-content {
-    padding: 18px;
-}
-
-.report-content h3 {
-    color: #087f72;
-    margin-bottom: 10px;
-}
-
-.report-content p {
-    margin: 9px 0;
-    font-size: 14px;
-    color: #444;
-    overflow-wrap: anywhere;
-}
-
-.severity {
-    display: inline-block;
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: bold;
-    margin-bottom: 10px;
-}
-
-.high {
-    background: #ffe0e0;
-    color: #c62828;
-}
-
-.medium {
-    background: #fff0d5;
-    color: #a65b00;
-}
-
-.low {
-    background: #fff8cc;
-    color: #856404;
-}
-
-.report-link {
-    display: inline-block;
-    margin-top: 10px;
-    font-weight: bold;
-}
-
-.loading,
-.empty,
-.load-error {
-    text-align: center;
-    padding: 25px;
-    color: #666;
-}
-
 @media(max-width: 700px) {
     body {
         padding: 10px;
@@ -309,12 +203,9 @@ a:hover {
     .welcome li {
         font-size: 15px;
     }
-
-    .community {
-        padding: 20px;
-    }
 }
 </style>
+
 </head>
 
 <body>
@@ -322,6 +213,7 @@ a:hover {
 <div class="container">
 
     <section class="welcome">
+
         <h1>Accessible Transit</h1>
 
         <p>
@@ -335,9 +227,11 @@ a:hover {
             <li><span class="check">&#10003;</span> View community reports</li>
             <li><span class="check">&#10003;</span> Help improve local mobility</li>
         </ul>
+
     </section>
 
     <section class="login">
+
         <h2>Welcome Back</h2>
 
         <p class="subtitle">
@@ -348,39 +242,52 @@ a:hover {
 
             <div class="field">
                 <label for="email">Email</label>
+
                 <input
                     type="email"
                     id="email"
                     placeholder="Enter your email"
                     required
-                    autocomplete="username">
+                    autocomplete="username"
+                >
             </div>
 
             <div class="field">
                 <label for="password">Password</label>
+
                 <input
                     type="password"
                     id="password"
                     placeholder="Enter your password"
                     required
-                    autocomplete="current-password">
+                    autocomplete="current-password"
+                >
             </div>
 
             <div class="options">
+
                 <label>
                     <input type="checkbox" id="rememberMe">
                     Remember me
                 </label>
 
-                <a href="forgot-password.html">Forgot password?</a>
+                <a href="forgot-password.html">
+                    Forgot password?
+                </a>
+
             </div>
 
             <button type="submit" id="loginButton">
                 Login
             </button>
 
-            <div id="message" class="message"
-                 role="alert" aria-live="polite"></div>
+            <div
+                id="message"
+                class="message"
+                role="alert"
+                aria-live="polite">
+            </div>
+
         </form>
 
         <div class="signup">
@@ -391,33 +298,14 @@ a:hover {
         <a href="index.html" class="home">
             &#8592; Back to Home
         </a>
+
     </section>
 
 </div>
 
-<!-- COMMUNITY ACCESSIBILITY REPORTS -->
-
-<section class="community">
-
-    <h2>Community Accessibility Reports</h2>
-
-    <p class="community-subtitle">
-        Explore accessibility barriers reported by the community.
-    </p>
-
-    <div id="reportsContainer" class="reports-grid">
-        <p class="loading">Loading community reports...</p>
-    </div>
-
-</section>
-
 <script>
-const API_BASE_URL = "https://accessibletransit.onrender.com";
-const LOGIN_URL = API_BASE_URL + "/api/login";
-const REPORTS_URL = API_BASE_URL + "/api/reports";
 
-
-/* LOGIN FUNCTIONALITY */
+const API_URL = "https://accessibletransit.onrender.com/api/login";
 
 document.getElementById("loginForm").addEventListener("submit", async function(e) {
 
@@ -431,24 +319,34 @@ document.getElementById("loginForm").addEventListener("submit", async function(e
 
     button.disabled = true;
     button.textContent = "Logging in...";
+
     message.className = "message";
     message.textContent = "";
 
     try {
 
-        const response = await fetch(LOGIN_URL, {
+        const response = await fetch(API_URL, {
+
             method: "POST",
+
             headers: {
                 "Content-Type": "application/json",
                 "Accept": "application/json"
             },
-            body: JSON.stringify({ email, password })
+
+            body: JSON.stringify({
+                email: email,
+                password: password
+            })
+
         });
 
         const data = await response.json();
 
         if (!response.ok || !data.success) {
-            throw new Error(data.message || "Login failed. Please check your details.");
+            throw new Error(
+                data.message || "Login failed. Please check your details."
+            );
         }
 
         if (!data.token || !data.user) {
@@ -467,7 +365,7 @@ document.getElementById("loginForm").addEventListener("submit", async function(e
         message.textContent = "Login successful! Opening dashboard...";
         message.className = "message success";
 
-        setTimeout(() => {
+        setTimeout(function() {
             window.location.href = "dashboard.html";
         }, 1000);
 
@@ -487,10 +385,8 @@ document.getElementById("loginForm").addEventListener("submit", async function(e
         button.textContent = "Login";
 
     }
+
 });
-
-
-/* RESTORE REMEMBERED EMAIL */
 
 const savedEmail = localStorage.getItem("rememberedEmail");
 
@@ -498,194 +394,6 @@ if (savedEmail) {
     document.getElementById("email").value = savedEmail;
     document.getElementById("rememberMe").checked = true;
 }
-
-
-/* IMAGE URL FIX */
-
-function getReportImageUrl(report) {
-
-    let image = report.imageUrl || report.image;
-
-    if (!image) return "";
-
-    image = String(image).trim();
-
-    // Already a complete Cloudinary or HTTP URL
-    if (/^https?:\/\//i.test(image)) {
-        return image;
-    }
-
-    // Recover a Cloudinary URL accidentally prefixed with localhost
-    const cloudinaryIndex = image.indexOf("https://res.cloudinary.com/");
-
-    if (cloudinaryIndex !== -1) {
-        return image.substring(cloudinaryIndex);
-    }
-
-    // Old locally stored image
-    if (image.startsWith("/uploads/")) {
-        return API_BASE_URL + image;
-    }
-
-    if (image.startsWith("uploads/")) {
-        return API_BASE_URL + "/" + image;
-    }
-
-    return "";
-}
-
-
-/* SAFE TEXT DISPLAY */
-
-function addText(parent, tag, value) {
-    const element = document.createElement(tag);
-    element.textContent = value ?? "";
-    parent.appendChild(element);
-    return element;
-}
-
-
-/* DISPLAY COMMUNITY REPORTS */
-
-async function loadCommunityReports() {
-
-    const container = document.getElementById("reportsContainer");
-
-    try {
-
-        const response = await fetch(REPORTS_URL, {
-            headers: {
-                "Accept": "application/json"
-            }
-        });
-
-        if (!response.ok) {
-            throw new Error("Unable to load community reports.");
-        }
-
-        const result = await response.json();
-
-        const reports = Array.isArray(result)
-            ? result
-            : (result.reports || result.data || []);
-
-        container.replaceChildren();
-
-        if (!reports.length) {
-            container.innerHTML = '<p class="empty">No community reports available.</p>';
-            return;
-        }
-
-        reports.forEach(report => {
-
-            const card = document.createElement("article");
-            card.className = "report-card";
-
-            const imageUrl = getReportImageUrl(report);
-
-            if (imageUrl) {
-
-                const img = document.createElement("img");
-
-                img.className = "report-image";
-                img.src = imageUrl;
-                img.alt = "Accessibility barrier reported by the community";
-                img.loading = "lazy";
-
-                img.onerror = function() {
-                    const placeholder = document.createElement("div");
-                    placeholder.className = "no-image";
-                    placeholder.textContent = "Image unavailable";
-                    img.replaceWith(placeholder);
-                };
-
-                card.appendChild(img);
-
-            } else {
-
-                const placeholder = document.createElement("div");
-                placeholder.className = "no-image";
-                placeholder.textContent = "No image available";
-                card.appendChild(placeholder);
-
-            }
-
-            const content = document.createElement("div");
-            content.className = "report-content";
-
-            addText(content, "h3", report.type || report.barrierType || "Accessibility Issue");
-
-            const severity = document.createElement("span");
-            const severityValue = String(report.severity || "LOW").toLowerCase();
-
-            severity.className = "severity " +
-                (["high", "medium", "low"].includes(severityValue)
-                    ? severityValue
-                    : "low");
-
-            severity.textContent = severityValue.toUpperCase();
-
-            content.appendChild(severity);
-
-            addText(content, "p", report.description || "No description provided.");
-
-            const reporter = report.reportedBy || report.userName || report.name || "Community User";
-            addText(content, "p", "👤 Reported by: " + reporter);
-
-            if (report.email) {
-                addText(content, "p", "📧 Email: " + report.email);
-            }
-
-            const latitude = report.latitude ?? report.location?.latitude ?? report.location?.lat;
-            const longitude = report.longitude ?? report.location?.longitude ?? report.location?.lng;
-
-            if (latitude !== undefined && longitude !== undefined) {
-                addText(content, "p", "📍 Location");
-                addText(content, "p", "Latitude: " + latitude);
-                addText(content, "p", "Longitude: " + longitude);
-            }
-
-            const date = report.createdAt || report.reportedAt || report.date;
-
-            if (date) {
-                const parsedDate = new Date(date);
-                addText(
-                    content,
-                    "p",
-                    "📅 Reported: " +
-                    (isNaN(parsedDate.getTime()) ? date : parsedDate.toLocaleString())
-                );
-            }
-
-            if (imageUrl) {
-                const link = document.createElement("a");
-                link.href = imageUrl;
-                link.target = "_blank";
-                link.rel = "noopener noreferrer";
-                link.className = "report-link";
-                link.textContent = "View Accessibility Image";
-                content.appendChild(link);
-            }
-
-            card.appendChild(content);
-            container.appendChild(card);
-
-        });
-
-    } catch (error) {
-
-        console.error("Community Reports Error:", error);
-
-        container.innerHTML =
-            '<p class="load-error">Unable to load community reports. Please try again later.</p>';
-
-    }
-}
-
-
-/* LOAD REPORTS WHEN PAGE OPENS */
-
-loadCommunityReports();
 
 </script>
 
