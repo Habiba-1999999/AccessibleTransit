@@ -122,12 +122,14 @@
             align-items: center;
             justify-content: center;
             color: #667085;
+            overflow: hidden;
         }
 
         .report-image img {
             width: 100%;
             height: 100%;
             object-fit: cover;
+            display: block;
         }
 
         .report-content {
@@ -169,6 +171,7 @@
             color: #667085;
             line-height: 1.6;
             margin-bottom: 15px;
+            overflow-wrap: anywhere;
         }
 
         .reporter {
@@ -179,6 +182,7 @@
             font-size: 13px;
             color: #52606d;
             line-height: 1.7;
+            overflow-wrap: anywhere;
         }
 
         .reporter strong {
@@ -293,6 +297,8 @@
 </footer>
 
 <script>
+    const API_BASE_URL = "https://accessibletransit.onrender.com";
+
     const reportsContainer =
         document.getElementById("reportsContainer");
 
@@ -303,37 +309,137 @@
         document.getElementById("error");
 
 
+    // Safely display text received from the API.
+    function escapeHTML(value) {
+        return String(value ?? "").replace(/[&<>"']/g, function (character) {
+            const entities = {
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                '"': "&quot;",
+                "'": "&#39;"
+            };
+
+            return entities[character];
+        });
+    }
+
+
+    // Correctly resolve Cloudinary and older local image paths.
+    function getReportImageUrl(report) {
+
+        let image =
+            report.imageUrl ||
+            report.image ||
+            report.photo ||
+            "";
+
+        // Some APIs may return an image object.
+        if (typeof image === "object" && image !== null) {
+            image =
+                image.secure_url ||
+                image.url ||
+                image.path ||
+                "";
+        }
+
+        if (!image) {
+            return "";
+        }
+
+        image = String(image).trim();
+
+        // Remove an incorrect localhost prefix if one was saved.
+        const cloudinaryIndex =
+            image.indexOf("https://res.cloudinary.com/");
+
+        if (cloudinaryIndex !== -1) {
+            return image.substring(cloudinaryIndex);
+        }
+
+        // Cloudinary or any other complete external URL.
+        if (/^https?:\/\//i.test(image)) {
+            return image;
+        }
+
+        // Protocol-relative URL.
+        if (image.startsWith("//")) {
+            return "https:" + image;
+        }
+
+        // Older images stored in the backend uploads folder.
+        if (image.startsWith("/uploads/")) {
+            return API_BASE_URL + image;
+        }
+
+        if (image.startsWith("uploads/")) {
+            return API_BASE_URL + "/" + image;
+        }
+
+        if (image.startsWith("/")) {
+            return API_BASE_URL + image;
+        }
+
+        return API_BASE_URL + "/" + image;
+    }
+
+
+    function getImageHTML(report) {
+
+        const imageUrl = getReportImageUrl(report);
+
+        if (!imageUrl) {
+            return `
+                <div class="report-image">
+                    No image available
+                </div>
+            `;
+        }
+
+        return `
+            <div class="report-image">
+                <img
+                    src="${escapeHTML(imageUrl)}"
+                    alt="Accessibility barrier reported by the community"
+                    loading="lazy"
+                    referrerpolicy="no-referrer"
+                    onerror="this.parentElement.innerHTML='No image available';"
+                >
+            </div>
+        `;
+    }
+
+
     async function loadReports() {
 
         try {
 
-            const response =
-                await fetch("https://accessibletransit.onrender.com/api/reports");
+            loading.style.display = "block";
+            error.style.display = "none";
 
-            const data =
-                await response.json();
+            const response = await fetch(
+                API_BASE_URL + "/api/reports"
+            );
 
-            loading.style.display = "none";
+            const data = await response.json();
 
-
-            if (!response.ok || !data.success) {
-
+            if (!response.ok || data.success === false) {
                 throw new Error(
                     data.message || "Unable to load reports."
                 );
-
             }
 
+            // Support both array and object API responses.
+            const reports = Array.isArray(data)
+                ? data
+                : (data.reports || data.data || []);
 
-            const reports =
-                data.reports || [];
+            loading.style.display = "none";
 
-
-            if (reports.length === 0) {
+            if (!Array.isArray(reports) || reports.length === 0) {
 
                 reportsContainer.innerHTML = `
                     <div class="no-reports">
-
                         <h2>No Reports Yet</h2>
 
                         <p>
@@ -344,7 +450,6 @@
                         <a href="map.html">
                             Report a Problem
                         </a>
-
                     </div>
                 `;
 
@@ -352,136 +457,118 @@
             }
 
 
-            reportsContainer.innerHTML =
-                reports.map(function(report) {
+            reportsContainer.innerHTML = reports.map(function (report) {
 
-                    const severity =
-                        (report.severity || "Low").toLowerCase();
+                const severityValue =
+                    String(report.severity || "Low").toLowerCase();
 
-                    const type =
-                        report.type || "Accessibility Issue";
+                const severityClass =
+                    ["high", "medium", "low"].includes(severityValue)
+                        ? severityValue
+                        : "low";
 
-                    const description =
-                        report.description ||
-                        "No description provided.";
+                const type =
+                    escapeHTML(report.type || "Accessibility Issue");
 
-                    const latitude =
+                const description =
+                    escapeHTML(
+                        report.description || "No description provided."
+                    );
+
+                const latitude =
+                    escapeHTML(
                         report.latitude !== undefined
-                        ? report.latitude
-                        : "N/A";
+                            ? report.latitude
+                            : "N/A"
+                    );
 
-                    const longitude =
+                const longitude =
+                    escapeHTML(
                         report.longitude !== undefined
-                        ? report.longitude
-                        : "N/A";
+                            ? report.longitude
+                            : "N/A"
+                    );
 
-                    const reporterName =
+                const reporterName =
+                    escapeHTML(
                         report.userName ||
-                        "Community User";
+                        report.reportedBy ||
+                        "Community User"
+                    );
 
-                    const reporterEmail =
+                const reporterEmail =
+                    escapeHTML(
                         report.userEmail ||
-                        "Email unavailable";
+                        report.email ||
+                        "Email unavailable"
+                    );
 
-                    const date =
-                        report.createdAt
-                        ? new Date(report.createdAt).toLocaleString()
-                        : "Date unavailable";
+                const date = report.createdAt
+                    ? escapeHTML(new Date(report.createdAt).toLocaleString())
+                    : "Date unavailable";
 
 
-                    let imageHTML = `
-                        <div class="report-image">
-                            No image available
+                const imageHTML = getImageHTML(report);
+
+
+                return `
+                    <article class="report-card">
+
+                        ${imageHTML}
+
+                        <div class="report-content">
+
+                            <div class="report-type">
+                                ${type}
+                            </div>
+
+                            <span class="severity ${severityClass}">
+                                ${severityClass.toUpperCase()}
+                            </span>
+
+                            <p class="description">
+                                ${description}
+                            </p>
+
+                            <div class="reporter">
+
+                                👤
+                                <strong>Reported by:</strong>
+                                ${reporterName}
+
+                                <br>
+
+                                📧
+                                <strong>Email:</strong>
+                                ${reporterEmail}
+
+                            </div>
+
+                            <p class="location">
+
+                                📍
+                                <strong>Location</strong>
+
+                                <br>
+
+                                Latitude: ${latitude}
+
+                                <br>
+
+                                Longitude: ${longitude}
+
+                            </p>
+
+                            <p class="date">
+                                📅 Reported: ${date}
+                            </p>
+
                         </div>
-                    `;
 
+                    </article>
+                `;
 
-                    if (report.image) {
-
-                        let imagePath = report.image;
-
-                        if (!imagePath.startsWith("/")) {
-                            imagePath = "/" + imagePath;
-                        }
-
-                        imageHTML = `
-                            <div class="report-image">
-
-                                <img
-                                    src="${imagePath}"
-                                    alt="Accessibility issue">
-
-                            </div>
-                        `;
-                    }
-
-
-                    return `
-
-                        <article class="report-card">
-
-                            ${imageHTML}
-
-                            <div class="report-content">
-
-                                <div class="report-type">
-                                    ${type}
-                                </div>
-
-                                <span class="severity ${severity}">
-                                    ${severity.toUpperCase()}
-                                </span>
-
-                                <p class="description">
-                                    ${description}
-                                </p>
-
-                                <div class="reporter">
-
-                                    👤
-                                    <strong>Reported by:</strong>
-                                    ${reporterName}
-
-                                    <br>
-
-                                    📧
-                                    <strong>Email:</strong>
-                                    ${reporterEmail}
-
-                                </div>
-
-                                <p class="location">
-
-                                    📍
-                                    <strong>Location</strong>
-
-                                    <br>
-
-                                    Latitude:
-                                    ${latitude}
-
-                                    <br>
-
-                                    Longitude:
-                                    ${longitude}
-
-                                </p>
-
-                                <p class="date">
-
-                                    📅
-                                    Reported:
-                                    ${date}
-
-                                </p>
-
-                            </div>
-
-                        </article>
-
-                    `;
-
-                }).join("");
+            }).join("");
 
 
         } catch (err) {
@@ -493,10 +580,7 @@
             error.textContent =
                 "Error loading reports: " + err.message;
 
-            console.error(
-                "Reports error:",
-                err
-            );
+            console.error("Reports error:", err);
 
         }
 
